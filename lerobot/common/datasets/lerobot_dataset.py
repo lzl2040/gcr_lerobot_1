@@ -168,12 +168,16 @@ class LeRobotDatasetMetadata:
         check_version_compatibility(self.repo_id, self._version, CODEBASE_VERSION)
         self.tasks, self.task_to_task_index = load_tasks(self.root)
         self.episodes = load_episodes(self.root)
-        if self._version < packaging.version.parse("v2.1"):
-            self.stats = load_stats(self.root)
-            self.episodes_stats = backward_compatible_episodes_stats(self.stats, self.episodes)
-        else:
+        self.stats = load_stats(self.root)
+        if self.stats == None:
             self.episodes_stats = load_episodes_stats(self.root)
             self.stats = aggregate_stats(list(self.episodes_stats.values()))
+        # if self._version < packaging.version.parse("v2.1"):
+        #     self.stats = load_stats(self.root)
+        #     self.episodes_stats = backward_compatible_episodes_stats(self.stats, self.episodes)
+        # else:
+        #     self.episodes_stats = load_episodes_stats(self.root)
+        #     self.stats = aggregate_stats(list(self.episodes_stats.values()))
 
     def pull_from_repo(
         self,
@@ -1470,7 +1474,8 @@ class MultiSameDataset(torch.utils.data.Dataset):
 
         self.dataset = ConcatDataset(self.datasets)
         self.num_episodes = episode_count
-        self.stats = aggregate_same_stats(self.datasets, dataset_names)
+        # self.stats = aggregate_same_stats(self.datasets, dataset_names)
+        self.stats = aggregate_stats([dataset.meta.stats for dataset in self.datasets])
         # update meta
         for d_name in dataset_names:
             data_config = OXE_DATASET_CONFIGS[d_name]
