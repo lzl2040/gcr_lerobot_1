@@ -144,16 +144,16 @@ def make_policy(
     # kwargs["pretrained_name_or_path"] = "/mnt/wangxiaofa/pi0_pretrain"
     # policy = policy_cls.from_pretrained(**kwargs)
     # print(f"Load from:{cfg.pretrained_path}")
-    if cfg.pretrained_path:
-        # Load a pretrained policy and override the config if needed (for example, if there are inference-time
-        # hyperparameters that we want to vary).
-        kwargs["pretrained_name_or_path"] = cfg.pretrained_path
-        policy = policy_cls.from_pretrained(**kwargs)
-        print(f"Load from:{cfg.pretrained_path}")
-    else:
-        # Make a fresh policy.
-        policy = policy_cls(**kwargs)
-        print("training from scratch") 
+    # if cfg.pretrained_path:
+    #     # Load a pretrained policy and override the config if needed (for example, if there are inference-time
+    #     # hyperparameters that we want to vary).
+    #     kwargs["pretrained_name_or_path"] = cfg.pretrained_path
+    #     policy = policy_cls.from_pretrained(**kwargs)
+    #     print(f"Load from:{cfg.pretrained_path}")
+    # else:
+    # Make a fresh policy.
+    policy = policy_cls(**kwargs)
+    print("training from scratch") 
     
     if len(weight_pt_path) > 0:
         weights = torch.load(weight_pt_path, map_location="cpu")
