@@ -162,16 +162,17 @@ def make_policy(
         # print(weights.keys())
         new_weights = {}
         for key, value in weights.items():
-            # if "buffer" in key:
-            #     print(f"Skip loading buffer: {key}")
-            #     continue
+            if "buffer" in key:
+                print(f"Skip loading buffer: {key}")
+                continue
             new_weights[key] = value
         if "pi05" in weight_pt_path:
             state_dict = policy._fix_pytorch_state_dict_keys(new_weights)
             missing_key, unexpected_keys = policy.load_state_dict(state_dict, strict=False)
             print(f"missing {missing_key} {unexpected_keys}")
         else:
-            policy.load_state_dict(new_weights, strict=True)
+            missing_key, unexpected_keys = policy.load_state_dict(new_weights, strict=False)
+            print(f"missing {missing_key} {unexpected_keys}")
         print(f"Load pt weights from:{weight_pt_path}")
     
     # policy.to(device)
