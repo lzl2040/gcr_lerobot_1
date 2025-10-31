@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
-OUTPUT_DIR="/mnt/wangxiaofa/pi0-ft-simulated/${JOB_NAME}"
+OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
 
 python lerobot/scripts/dps_train.py \
     --deepspeed="./ds_zero2_40G.json" \
@@ -39,10 +39,10 @@ python lerobot/scripts/dps_train.py \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \
     --dataset.use_state=$USE_STATE \
-    --dataset.image_transforms.enable=false \
+    --dataset.image_transforms.enable=true \
     --wandb.enable=false \
     --resume=true \
-    --wandb.project="pi0-ft-simulated" \
+    --wandb.project="pi05-ft-simulated" \
     --job_name=$JOB_NAME \
     --log_dir="/mnt/wangxiaofa/logs" \
     --output_dir=$OUTPUT_DIR \
