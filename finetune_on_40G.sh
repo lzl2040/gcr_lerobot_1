@@ -30,8 +30,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
-
-python lerobot/scripts/dps_train.py \
+# 
+# python lerobot/scripts/dps_train.py \
+python -m lerobot.scripts.dps_train \
     --deepspeed="./ds_zero2_40G.json" \
     --policy.type=$MODEL_TYPE \
     --policy.use_lora=false \
