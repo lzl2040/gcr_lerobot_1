@@ -2,7 +2,8 @@ USE_STATE=true
 JOB_NAME="1009-american-data-w-state"
 DATA_MIX="simpler"
 MODEL_TYPE="pi05"
-PT_PATH="/mnt/wangxiaofa/pi0_05/pi05_base/model_new.pt"
+# PT_PATH="/mnt/wangxiaofa/pi0_05/pi05_base/model_new.pt"
+PT_PATH="/mnt/wangxiaofa/latent_action_exp/1031_distill_pi05_oxe_minus/step10000.pt"
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do

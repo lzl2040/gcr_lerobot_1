@@ -167,7 +167,10 @@ def make_policy(
                 continue
             new_weights[key] = value
         if "pi05" in weight_pt_path:
-            state_dict = policy._fix_pytorch_state_dict_keys(new_weights)
+            if "pi05_base" in weight_pt_path:
+                state_dict = policy._fix_pytorch_state_dict_keys(new_weights)
+            else:
+                state_dict = new_weights
             missing_key, unexpected_keys = policy.load_state_dict(state_dict, strict=False)
             print(f"missing {missing_key} {unexpected_keys}")
         else:
