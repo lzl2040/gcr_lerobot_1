@@ -232,6 +232,8 @@ class PI05Policy(PreTrainedPolicy):
 
         self.model.to(config.device)
         self.dtype = torch.bfloat16
+        self.COMPRESS_ACTION_TOKEN = COMPRESS_ACTION_TOKEN
+        self.COMPRESS_SC_TOKEN = COMPRESS_SC_TOKEN
 
         self.reset()
     
@@ -324,7 +326,7 @@ class PI05Policy(PreTrainedPolicy):
         missing_img_keys = [key for key in self.config.image_features if key not in batch]
         # present_img_keys = ["observation.images.primary"]
         # missing_img_keys = []
-        print(present_img_keys, missing_img_keys)
+        # print(present_img_keys, missing_img_keys)
 
         if len(present_img_keys) == 0:
             raise ValueError(
@@ -453,10 +455,26 @@ class PI05Policy(PreTrainedPolicy):
         discretized_states = np.digitize(state_np, bins=np.linspace(-1, 1, 256 + 1)[:-1]) - 1
         full_prompts = []
         tasks = batch["task"]
+        # for i, task in enumerate(tasks):
+        #     cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
+        #     state_str = " ".join(map(str, discretized_states[i]))
+        #     full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
+        #     full_prompts.append(full_prompt)
+        
         for i, task in enumerate(tasks):
             cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
             state_str = " ".join(map(str, discretized_states[i]))
-            full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
+            # full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
+            full_prompt = f"Task: {cleaned_text}, State: {state_str}; "
+            summary_text = ""
+            summary_text = summary_text + "Scene representations:"
+            for j in range(64):
+                summary_text += f"[{self.COMPRESS_SC_TOKEN}] "
+            summary_text += ". Action representations:"
+            for j in range(64):
+                summary_text += f"[{self.COMPRESS_ACTION_TOKEN}] "
+            summary_text += ".\nAction:"
+            full_prompt = full_prompt + summary_text
             full_prompts.append(full_prompt)
         
         batch["task"] = full_prompts
