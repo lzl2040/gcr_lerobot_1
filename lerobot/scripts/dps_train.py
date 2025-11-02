@@ -266,6 +266,8 @@ def train(cfg: TrainPipelineConfig):
                             prefetch_factor=4
                             )
     # DeepSpeed initialization
+    if cfg.policy.type == "pi05":
+        policy.resize_token_embedding()
     model_engine, optimizer, _, lr_scheduler = deepspeed.initialize(
         model=policy,
         optimizer=optimizer,
