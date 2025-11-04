@@ -295,7 +295,16 @@ def aggregate_stats(stats_list: list[dict[str, dict]]) -> dict[str, dict[str, np
     for key in data_keys:
         stats_with_key = [stats[key] for stats in stats_list if key in stats]
         aggregated_stats[key] = aggregate_feature_stats(stats_with_key)
-
+        if key == "observation.state":
+            idx = [0, 1, 2, 6, 7, 8, 9, -1]
+        elif key == "action":
+            idx = [0, 1, 2, 3, 4, 5, -1]
+        else:
+            continue
+        for k, v in aggregated_stats[key].items():
+            if aggregated_stats[key][k].shape[0] > 10:
+                aggregated_stats[key][k] = aggregated_stats[key][k][idx]
+                
     return aggregated_stats
 
 def aggregate_multi_stats(ls_datasets: list, data_names: list, max_dim: int) -> dict[str, torch.Tensor]:
