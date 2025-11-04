@@ -1572,6 +1572,13 @@ class MultiSameDataset(torch.utils.data.Dataset):
         if self.use_state == False:
             item["observation.state"][:] = 0
         
+        if item["observation.state"].shape[0] > 10:
+            state_idx = [0, 1, 2, 6, 7, 8, 9, -1]
+            item["observation.state"] = item["observation.state"][state_idx]
+            action_idx = list(range(0, 6)) + [-1]
+            item["action"] = item["action"][:, action_idx]
+            # print(item["observation.state"].shape, item["action"].shape)
+        
         # 50 14, 15
         # print(item["action"].shape, item["observation.state"].shape)
         
