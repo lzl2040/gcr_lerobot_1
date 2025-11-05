@@ -275,7 +275,7 @@ def aggregate_same_stats(ls_datasets, data_names: list) -> dict[str, torch.Tenso
     
     return stats
 
-def aggregate_stats(stats_list: list[dict[str, dict]]) -> dict[str, dict[str, np.ndarray]]:
+def aggregate_stats(stats_list: list[dict[str, dict]], action_idx = None, state_idx = None) -> dict[str, dict[str, np.ndarray]]:
     """Aggregate stats from multiple compute_stats outputs into a single set of stats.
 
     The final stats will have the union of all data keys from each of the stats dicts.
@@ -295,15 +295,18 @@ def aggregate_stats(stats_list: list[dict[str, dict]]) -> dict[str, dict[str, np
     for key in data_keys:
         stats_with_key = [stats[key] for stats in stats_list if key in stats]
         aggregated_stats[key] = aggregate_feature_stats(stats_with_key)
-        if key == "observation.state":
-            idx = [0, 1, 2, 6, 7, 8, 9, -1]
-        elif key == "action":
-            idx = [0, 1, 2, 3, 4, 5, -1]
-        else:
-            continue
-        for k, v in aggregated_stats[key].items():
-            if aggregated_stats[key][k].shape[0] > 10:
-                aggregated_stats[key][k] = aggregated_stats[key][k][idx]
+        # if key == "observation.state":
+        #     # idx = [0, 1, 2, 6, 7, 8, 9, -1]
+        #     idx = state_idx
+        # elif key == "action":
+        #     # idx = [0, 1, 2, 3, 4, 5, -1]
+        #     idx = action_idx
+        # else:
+        #     continue
+        # if state_idx != None or action_idx != None:
+        #     for k, v in aggregated_stats[key].items():
+        #         if aggregated_stats[key][k].shape[0] > 10:
+        #             aggregated_stats[key][k] = aggregated_stats[key][k][idx]
                 
     return aggregated_stats
 
