@@ -44,7 +44,7 @@ from lerobot.common.constants import HF_LEROBOT_HOME
 from lerobot.common.datasets.oxe_configs import OXE_DATASET_CONFIGS
 from lerobot.common.datasets.mixtures import OXE_NAMED_MIXTURES
 # from lerobot.common.datasets.factory import resolve_delta_timestamps
-from lerobot.common.datasets.compute_stats import aggregate_stats, compute_episode_stats, aggregate_multi_stats, aggregate_same_stats
+from lerobot.common.datasets.compute_stats import aggregate_stats_2 as aggregate_stats, compute_episode_stats, aggregate_multi_stats, aggregate_same_stats
 from lerobot.common.datasets.transforms import ImageTransforms
 from lerobot.common.datasets.image_writer import AsyncImageWriter, write_image
 from lerobot.common.datasets.utils import (
@@ -1451,16 +1451,16 @@ class MultiSameDataset(torch.utils.data.Dataset):
             if meta_features == None:
                 meta_features = ds_meta.features
             delta_timestamps = resolve_delta_timestamps(cfg.policy, ds_meta)
-            if "american" in d_name:
-                # episode_list = list(range(1501)) # 100个视频
-                episode_list = list(range(1501, 1601)) # 100个视频
-                # episode_list = list(range(1701))
-            else:
-                episode_list = None
+            # if "american" in d_name:
+            #     # episode_list = list(range(1501)) # 100个视频
+            #     episode_list = list(range(1501, 1601)) # 100个视频
+            #     # episode_list = list(range(1701))
+            # else:
+            #     episode_list = None
             dataset = LeRobotDataset(
                 repo_id, 
                 root=data_root,
-                episodes=episode_list,
+                # episodes=episode_list,
                 delta_timestamps=delta_timestamps,
                 image_transforms=image_transforms,
                 wrist_image_transforms=wrist_image_transforms,
@@ -1475,7 +1475,24 @@ class MultiSameDataset(torch.utils.data.Dataset):
         self.dataset = ConcatDataset(self.datasets)
         self.num_episodes = episode_count
         # self.stats = aggregate_same_stats(self.datasets, dataset_names)
-        self.stats = aggregate_stats([dataset.meta.stats for dataset in self.datasets])
+        if "american" in cfg.dataset.data_mix:
+            act_dim = 17
+            left_state_idx = [0, 1, 2, 6, 7, 8, 9, 16]
+            self.state_idx = []
+            self.state_idx.extend(left_state_idx)
+            for s_id in left_state_idx:
+                self.state_idx.append(s_id + act_dim)
+            
+            left_action_idx = [0, 1, 2, 3, 4, 5, 16]
+            self.action_idx = []
+            self.action_idx.extend(left_action_idx)
+            for a_id in left_action_idx:
+                self.action_idx.append(a_id + act_dim)
+        else:
+            self.state_idx = [0, 1, 2, 6, 7, 8, 9, -1]
+            self.action_idx = list(range(0, 6)) + [-1]
+        print(f"action idx:{self.action_idx} state idx:{self.state_idx}")
+        self.stats = aggregate_stats([dataset.meta.stats for dataset in self.datasets], self.action_idx, self.state_idx)
         # update meta
         for d_name in dataset_names:
             data_config = OXE_DATASET_CONFIGS[d_name]
@@ -1573,10 +1590,8 @@ class MultiSameDataset(torch.utils.data.Dataset):
             item["observation.state"][:] = 0
         
         if item["observation.state"].shape[0] > 10:
-            state_idx = [0, 1, 2, 6, 7, 8, 9, -1]
-            item["observation.state"] = item["observation.state"][state_idx]
-            action_idx = list(range(0, 6)) + [-1]
-            item["action"] = item["action"][:, action_idx]
+            item["observation.state"] = item["observation.state"][self.state_idx]
+            item["action"] = item["action"][:, self.action_idx]
             # print(item["observation.state"].shape, item["action"].shape)
         
         # 50 14, 15
@@ -1663,7 +1678,7 @@ class MultiDatasetforDistTraining(torch.utils.data.Dataset):
                 dataset = LeRobotDataset(
                     repo_id, 
                     root=data_root,
-                    episodes=episode_list,
+                    # episodes=episode_list,
                     delta_timestamps=delta_timestamps,
                     image_transforms=image_transforms,
                     video_backend=cfg.dataset.video_backend
