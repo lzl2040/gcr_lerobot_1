@@ -2,6 +2,8 @@ USE_STATE=true
 JOB_NAME="1009-american-data-w-state"
 DATA_MIX="simpler"
 MODEL_TYPE="pi05"
+TRAIN_EXPERT_ONLY=false
+FREEZE_VISION=false
 # PT_PATH="/mnt/wangxiaofa/pi0_05/pi05_base/model_new.pt"
 PT_PATH="/mnt/wangxiaofa/latent_action_exp/1031_distill_pi05_oxe_minus/step10000.pt"
 
@@ -24,6 +26,14 @@ while [[ $# -gt 0 ]]; do
             MODEL_TYPE="$2"
             shift 2
             ;;
+        --train_expert_only)
+            TRAIN_EXPERT_ONLY="$2"
+            shift 2
+            ;;
+        --freeze_vision)
+            FREEZE_VISION="$2"
+            shift 2
+            ;;
         --pt_path)
             PT_PATH="$2"
             shift 2
@@ -37,6 +47,8 @@ python -m lerobot.scripts.dps_train \
     --deepspeed="./ds_zero2_40G.json" \
     --policy.type=$MODEL_TYPE \
     --policy.use_lora=false \
+    --policy.train_expert_only=$TRAIN_EXPERT_ONLY \
+    --policy.freeze_vision_encoder=$FREEZE_VISION \
     --dataset.root="/mnt/wangxiaofa/robot_dataset/lerobot-format" \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \

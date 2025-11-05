@@ -65,6 +65,9 @@ class PI05Config(PreTrainedConfig):
             # "ACTION": NormalizationMode.MEAN_STD,  #
         }
     )
+    
+    freeze_vision_encoder: bool = False
+    train_expert_only: bool = False
 
     # Training settings
     gradient_checkpointing: bool = False  # Enable gradient checkpointing for memory optimization

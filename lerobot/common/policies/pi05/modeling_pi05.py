@@ -203,6 +203,7 @@ class PI05Policy(PreTrainedPolicy):
         self.unnormalize_outputs = Unnormalize(
             config.output_features, config.normalization_mapping, dataset_stats
         )
+        
 
         # Initialize the core PI05 model
         self.model = PI05FlowMatching(config)
@@ -537,7 +538,7 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         if config.compile_model:
             torch.set_float32_matmul_precision("high")
             self.sample_actions = torch.compile(self.sample_actions, mode=config.compile_mode)
-
+        self.set_requires_grad()
         # msg = """An incorrect transformer version is used, please create an issue on https://github.com/huggingface/lerobot/issues"""
 
         # try:
@@ -548,6 +549,20 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         # except ImportError:
         #     raise ValueError(msg) from None
 
+    def set_requires_grad(self):        
+        if self.config.freeze_vision_encoder:
+            print(f"Freeze vision encoder from paligemma")
+            self.paligemma_with_expert.paligemma.vision_tower.eval()
+            for params in self.paligemma_with_expert.paligemma.vision_tower.parameters():
+                params.requires_grad = False
+
+        if self.config.train_expert_only:
+            print(print(f"Freeze paligemma vlm"))
+            self.paligemma_with_expert.paligemma.eval()
+            for params in self.paligemma_with_expert.paligemma.parameters():
+                params.requires_grad = False
+            
+    
     def gradient_checkpointing_enable(self):
         """Enable gradient checkpointing for memory optimization."""
         self.gradient_checkpointing_enabled = True
