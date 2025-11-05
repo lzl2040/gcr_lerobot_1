@@ -1,11 +1,11 @@
 {
     "bf16": {
-        "enabled": true
+        "enabled": false
     },
     "fp16": {
         "enabled": false
     },
-    "train_micro_batch_size_per_gpu": 4,
+    "train_micro_batch_size_per_gpu": 12,
     "gradient_accumulation_steps": 2,
     "gradient_clipping": 1.0,
     "zero_optimization": {
