@@ -211,17 +211,17 @@ class PI05Policy(PreTrainedPolicy):
         # tokenizer_path = "/Data/lzl/huggingface/models--google--paligemma-3b-pt-224/snapshots/35e4f46485b4d07967e7e9935bc3786aad50687c/"
         tokenizer_path = "/mnt/wangxiaofa/RDT_module_params/paligemma-3b-pt-224/"
         self.language_tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
-        COMPRESS_SC_TOKEN = 'CP_SC'
-        COMPRESS_ACTION_TOKEN = 'CP_ACT'
-        new_action_tokens = [f"[{COMPRESS_ACTION_TOKEN}]"]
-        new_scene_tokens = [f"[{COMPRESS_SC_TOKEN}]"]
-        self.language_tokenizer.add_tokens(new_action_tokens)
-        self.language_tokenizer.add_tokens(new_scene_tokens)
-        # self.cp_act_token_idx =  [self.processor.tokenizer(f"[{COMPRESS_ACTION_TOKEN}{i}]", add_special_tokens=False).input_ids[0] for i in range(cfg.policy.num_action_token)]
-        # self.cp_sc_token_idx = [self.processor.tokenizer(f"[{COMPRESS_SC_TOKEN}{i}]", add_special_tokens=False).input_ids[0] for i in range(cfg.policy.num_sc_token)]
-        self.cp_act_token_idx =  [self.language_tokenizer(f"[{COMPRESS_ACTION_TOKEN}]", add_special_tokens=False).input_ids[0]]
-        self.cp_sc_token_idx = [self.language_tokenizer(f"[{COMPRESS_SC_TOKEN}]", add_special_tokens=False).input_ids[0]]
-        print(f"Pi05 CP_IMG token idx: {self.cp_sc_token_idx}, CP_ACT token idx: {self.cp_act_token_idx}")
+        # COMPRESS_SC_TOKEN = 'CP_SC'
+        # COMPRESS_ACTION_TOKEN = 'CP_ACT'
+        # new_action_tokens = [f"[{COMPRESS_ACTION_TOKEN}]"]
+        # new_scene_tokens = [f"[{COMPRESS_SC_TOKEN}]"]
+        # self.language_tokenizer.add_tokens(new_action_tokens)
+        # self.language_tokenizer.add_tokens(new_scene_tokens)
+        # # self.cp_act_token_idx =  [self.processor.tokenizer(f"[{COMPRESS_ACTION_TOKEN}{i}]", add_special_tokens=False).input_ids[0] for i in range(cfg.policy.num_action_token)]
+        # # self.cp_sc_token_idx = [self.processor.tokenizer(f"[{COMPRESS_SC_TOKEN}{i}]", add_special_tokens=False).input_ids[0] for i in range(cfg.policy.num_sc_token)]
+        # self.cp_act_token_idx =  [self.language_tokenizer(f"[{COMPRESS_ACTION_TOKEN}]", add_special_tokens=False).input_ids[0]]
+        # self.cp_sc_token_idx = [self.language_tokenizer(f"[{COMPRESS_SC_TOKEN}]", add_special_tokens=False).input_ids[0]]
+        # print(f"Pi05 CP_IMG token idx: {self.cp_sc_token_idx}, CP_ACT token idx: {self.cp_act_token_idx}")
         
 
         self.model = PI05FlowMatching(config)
@@ -233,8 +233,8 @@ class PI05Policy(PreTrainedPolicy):
 
         self.model.to(config.device)
         self.dtype = torch.bfloat16
-        self.COMPRESS_ACTION_TOKEN = COMPRESS_ACTION_TOKEN
-        self.COMPRESS_SC_TOKEN = COMPRESS_SC_TOKEN
+        # self.COMPRESS_ACTION_TOKEN = COMPRESS_ACTION_TOKEN
+        # self.COMPRESS_SC_TOKEN = COMPRESS_SC_TOKEN
 
         self.reset()
     
