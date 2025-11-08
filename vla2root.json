@@ -56,5 +56,7 @@
     "cup_7hz": "cup_hz_7_plus",
     "cup_2.5hz": "cup_hz_2.5_plus",
     "cup_10hz": "cup_hz_10_plus",
-    "cup_4hz": "cup_hz_4_plus_1103"
+    "cup_4hz": "cup_hz_4_plus_1103",
+    "simpler_fractal_sub1" : "simpler_fractal_sub1",
+    "simpler_fractal_sub2" : "simpler_fractal_sub2"
 }
