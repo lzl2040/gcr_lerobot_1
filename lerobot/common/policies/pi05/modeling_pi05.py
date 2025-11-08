@@ -456,27 +456,27 @@ class PI05Policy(PreTrainedPolicy):
         discretized_states = np.digitize(state_np, bins=np.linspace(-1, 1, 256 + 1)[:-1]) - 1
         full_prompts = []
         tasks = batch["task"]
-        # for i, task in enumerate(tasks):
-        #     cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
-        #     state_str = " ".join(map(str, discretized_states[i]))
-        #     full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
-        #     full_prompts.append(full_prompt)
-        
         for i, task in enumerate(tasks):
             cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
             state_str = " ".join(map(str, discretized_states[i]))
-            # full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
-            full_prompt = f"Task: {cleaned_text}, State: {state_str}; "
-            summary_text = ""
-            summary_text = summary_text + "Scene representations:"
-            for j in range(64):
-                summary_text += f"[{self.COMPRESS_SC_TOKEN}] "
-            summary_text += ". Action representations:"
-            for j in range(64):
-                summary_text += f"[{self.COMPRESS_ACTION_TOKEN}] "
-            summary_text += ".\nAction:"
-            full_prompt = full_prompt + summary_text
+            full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
             full_prompts.append(full_prompt)
+        
+        # for i, task in enumerate(tasks):
+        #     cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
+        #     state_str = " ".join(map(str, discretized_states[i]))
+        #     # full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
+        #     full_prompt = f"Task: {cleaned_text}, State: {state_str}; "
+        #     summary_text = ""
+        #     summary_text = summary_text + "Scene representations:"
+        #     for j in range(64):
+        #         summary_text += f"[{self.COMPRESS_SC_TOKEN}] "
+        #     summary_text += ". Action representations:"
+        #     for j in range(64):
+        #         summary_text += f"[{self.COMPRESS_ACTION_TOKEN}] "
+        #     summary_text += ".\nAction:"
+        #     full_prompt = full_prompt + summary_text
+        #     full_prompts.append(full_prompt)
         
         batch["task"] = full_prompts
         tokens, masks = self.prepare_language(batch)
