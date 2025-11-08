@@ -446,7 +446,9 @@ class PI05Policy(PreTrainedPolicy):
 
         # 先归一化，然后再pad
         batch = self.normalize_inputs(batch)
+        # print("norm pre", batch["action"][:,:, 6])
         batch = self.normalize_targets(batch)
+        # print("norm after", batch["action"][:, :, 6])
 
         # Prepare inputs
         images, img_masks = self._preprocess_images(batch)
@@ -456,27 +458,27 @@ class PI05Policy(PreTrainedPolicy):
         discretized_states = np.digitize(state_np, bins=np.linspace(-1, 1, 256 + 1)[:-1]) - 1
         full_prompts = []
         tasks = batch["task"]
-        for i, task in enumerate(tasks):
-            cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
-            state_str = " ".join(map(str, discretized_states[i]))
-            full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
-            full_prompts.append(full_prompt)
-        
         # for i, task in enumerate(tasks):
         #     cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
         #     state_str = " ".join(map(str, discretized_states[i]))
-        #     # full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
-        #     full_prompt = f"Task: {cleaned_text}, State: {state_str}; "
-        #     summary_text = ""
-        #     summary_text = summary_text + "Scene representations:"
-        #     for j in range(64):
-        #         summary_text += f"[{self.COMPRESS_SC_TOKEN}] "
-        #     summary_text += ". Action representations:"
-        #     for j in range(64):
-        #         summary_text += f"[{self.COMPRESS_ACTION_TOKEN}] "
-        #     summary_text += ".\nAction:"
-        #     full_prompt = full_prompt + summary_text
+        #     full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
         #     full_prompts.append(full_prompt)
+        
+        for i, task in enumerate(tasks):
+            cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
+            state_str = " ".join(map(str, discretized_states[i]))
+            # full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
+            full_prompt = f"Task: {cleaned_text}, State: {state_str}; "
+            summary_text = ""
+            summary_text = summary_text + "Scene representations:"
+            for j in range(64):
+                summary_text += f"[{self.COMPRESS_SC_TOKEN}] "
+            summary_text += ". Action representations:"
+            for j in range(64):
+                summary_text += f"[{self.COMPRESS_ACTION_TOKEN}] "
+            summary_text += ".\nAction:"
+            full_prompt = full_prompt + summary_text
+            full_prompts.append(full_prompt)
         
         batch["task"] = full_prompts
         tokens, masks = self.prepare_language(batch)
@@ -493,14 +495,15 @@ class PI05Policy(PreTrainedPolicy):
         losses = self.model.forward(images, img_masks, tokens, masks, actions)
 
         # Truncate losses to actual action dimensions
-        original_action_dim = self.config.output_features[ACTION].shape[0]
-        losses = losses[:, :, :original_action_dim]
+        if self.config.loss_type != "xvla_loss":
+            original_action_dim = self.config.output_features[ACTION].shape[0]
+            losses = losses[:, :, :original_action_dim]
 
         loss = losses.mean()
 
         loss_dict = {
             "loss": loss.item(),
-            "loss_per_dim": losses.mean(dim=[0, 1]).detach().cpu().numpy().tolist(),
+            # "loss_per_dim": losses.mean(dim=[0, 1]).detach().cpu().numpy().tolist(),
         }
 
         return loss, loss_dict
@@ -512,6 +515,7 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
     def __init__(self, config: PI05Config):
         super().__init__()
         self.config = config
+        self.loss_type = config.loss_type
 
         paligemma_config = get_gemma_config(config.paligemma_variant)
         action_expert_config = get_gemma_config(config.action_expert_variant)
@@ -539,6 +543,8 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
             torch.set_float32_matmul_precision("high")
             self.sample_actions = torch.compile(self.sample_actions, mode=config.compile_mode)
         self.set_requires_grad()
+        self.mse = nn.MSELoss()
+        self.bce = nn.BCEWithLogitsLoss()
         # msg = """An incorrect transformer version is used, please create an issue on https://github.com/huggingface/lerobot/issues"""
 
         # try:
@@ -699,7 +705,23 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         return embs, pad_masks, att_masks, adarms_cond
 
     def xvla_loss(self, gt_action, pred_action):
-        print("1243")
+        '''
+        gt_action: B 50 32
+        pred_action: B 50 32
+        '''
+        # print(gt_action.shape, pred_action.shape)
+        # print("pre", gt_action[:, :, 6])
+        gt_action[:, :, 6] = torch.round(gt_action[:, :, 6]).long()
+        # print("after", gt_action[:, :, 6])
+        gt_action = gt_action[:, :, :self.config.output_features[ACTION].shape[0]]
+        pred_action = pred_action[:, :, :self.config.output_features[ACTION].shape[0]]
+        gripper_loss = self.bce(pred_action[:, :, 6], gt_action[:, :, 6]) * self.config.GRIPPER_SCALE
+        position_loss = self.mse(pred_action[:, :, [0, 1, 2]], gt_action[:, :, [0, 1, 2]]) * self.config.XYZ_SCALE
+        rot_loss = self.mse(pred_action[:, :, [3, 4, 5]], gt_action[:, :, [3, 4, 5]]) * self.config.ROT_SCALE
+        loss = gripper_loss + position_loss + rot_loss
+        # print(f"gripper loss:{gripper_loss.item()}, position loss:{position_loss.item()} rot loss:{rot_loss.item()}")
+        return loss
+        
     
     def forward(self, images, img_masks, tokens, masks, actions, noise=None, time=None) -> Tensor:
         """Do a full training forward pass and compute the loss."""
@@ -756,7 +778,11 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         
         v_t = v_t.to(dtype=torch.float32)
         u_t = u_t.to(dtype=torch.float32)
-
+        if self.loss_type == "xvla_loss":
+            pred_actions = noise - v_t
+            pred_actions = pred_actions.to(dtype=torch.float32)
+            actions = actions.to(dtype=torch.float32)
+            return self.xvla_loss(actions, pred_actions)
         return F.mse_loss(u_t, v_t, reduction="none")
 
     @torch.no_grad()  # see openpi `sample_actions` (slightly adapted)

@@ -68,6 +68,10 @@ class PI05Config(PreTrainedConfig):
     
     freeze_vision_encoder: bool = False
     train_expert_only: bool = False
+    loss_type: str = "xvla_loss"
+    GRIPPER_SCALE: float = 0.1
+    XYZ_SCALE: float = 5.0
+    ROT_SCALE: float = 1.0
 
     # Training settings
     gradient_checkpointing: bool = True  # Enable gradient checkpointing for memory optimization
@@ -85,8 +89,8 @@ class PI05Config(PreTrainedConfig):
     # Scheduler settings: see openpi `CosineDecaySchedule`
     # Note: These will auto-scale if --steps < scheduler_decay_steps
     # For example, --steps=3000 will scale warmup to 100 and decay to 3000
-    scheduler_warmup_steps: int = 1_000
-    scheduler_decay_steps: int = 45_000
+    scheduler_warmup_steps: int = 2_000
+    scheduler_decay_steps: int = 60_000
     scheduler_decay_lr: float = 2.5e-6
 
     tokenizer_max_length: int = 200  # see openpi `__post_init__`

@@ -6,6 +6,7 @@ TRAIN_EXPERT_ONLY=false
 FREEZE_VISION=false
 # PT_PATH="/mnt/wangxiaofa/pi0_05/pi05_base/model_new.pt"
 PT_PATH="/mnt/wangxiaofa/latent_action_exp/1031_distill_pi05_oxe_minus/step10000.pt"
+LOSS_TYPE="mse_loss"
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -38,6 +39,10 @@ while [[ $# -gt 0 ]]; do
             PT_PATH="$2"
             shift 2
             ;;
+        --loss_type)
+            LOSS_TYPE="$2"
+            shift 2
+            ;;
     esac
 done
 OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
@@ -49,11 +54,12 @@ python -m lerobot.scripts.dps_train \
     --policy.use_lora=false \
     --policy.train_expert_only=$TRAIN_EXPERT_ONLY \
     --policy.freeze_vision_encoder=$FREEZE_VISION \
+    --policy.loss_type=$LOSS_TYPE \
     --dataset.root="/mnt/wangxiaofa/robot_dataset/lerobot-format" \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \
     --dataset.use_state=$USE_STATE \
-    --dataset.image_transforms.enable=true \
+    --dataset.image_transforms.enable=false \
     --wandb.enable=false \
     --resume=true \
     --wandb.project="pi05-ft-simulated" \
