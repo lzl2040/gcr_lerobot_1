@@ -59,7 +59,7 @@ python -m lerobot.scripts.dps_train \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \
     --dataset.use_state=$USE_STATE \
-    --dataset.image_transforms.enable=false \
+    --dataset.image_transforms.enable=true \
     --wandb.enable=false \
     --resume=true \
     --wandb.project="pi05-ft-simulated" \

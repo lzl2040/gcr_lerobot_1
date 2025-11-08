@@ -150,9 +150,9 @@ def train(cfg: TrainPipelineConfig):
     image_transforms = (
         ImageTransforms(cfg.dataset.image_transforms)
     )
-    # wrist_image_transforms = (
-    #     ImageTransforms(cfg.dataset.wrist_image_transforms) if cfg.dataset.image_transforms.enable else None
-    # )
+    wrist_image_transforms = (
+        ImageTransforms(cfg.dataset.wrist_image_transforms) if cfg.dataset.image_transforms.enable else None
+    )
     print(f"Image transforms:{image_transforms}")
     # print(wrist_image_transforms)
     
@@ -187,8 +187,8 @@ def train(cfg: TrainPipelineConfig):
     # logger.info(f"Dataset names:{data_names}")
     dataset = MultiSameDataset(cfg=cfg, 
                                image_transforms=image_transforms,
-                               vla2root_json="vla2root.json"
-                            #    wrist_image_transforms=wrist_image_transforms)
+                               vla2root_json="vla2root.json",
+                               wrist_image_transforms=wrist_image_transforms
     )
     
     
