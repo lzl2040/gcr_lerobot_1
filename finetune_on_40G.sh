@@ -7,6 +7,7 @@ FREEZE_VISION=false
 # PT_PATH="/mnt/wangxiaofa/pi0_05/pi05_base/model_new.pt"
 PT_PATH="/mnt/wangxiaofa/latent_action_exp/1031_distill_pi05_oxe_minus/step10000.pt"
 LOSS_TYPE="mse_loss"
+IMG_AUG=true
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -43,6 +44,10 @@ while [[ $# -gt 0 ]]; do
             LOSS_TYPE="$2"
             shift 2
             ;;
+        --img_aug)
+            IMG_AUG="$2"
+            shift 2
+            ;;
     esac
 done
 OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
@@ -59,7 +64,7 @@ python -m lerobot.scripts.dps_train \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \
     --dataset.use_state=$USE_STATE \
-    --dataset.image_transforms.enable=true \
+    --dataset.image_transforms.enable=$IMG_AUG \
     --wandb.enable=true \
     --resume=false \
     --weight_resume=true \
