@@ -62,6 +62,7 @@ python -m lerobot.scripts.dps_train \
     --dataset.image_transforms.enable=true \
     --wandb.enable=true \
     --resume=false \
+    --weight_resume=true \
     --wandb.project="pi05-ft-simulated" \
     --job_name=$JOB_NAME \
     --log_dir="/mnt/wangxiaofa/logs" \

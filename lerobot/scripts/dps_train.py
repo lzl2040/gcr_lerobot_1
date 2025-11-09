@@ -282,7 +282,7 @@ def train(cfg: TrainPipelineConfig):
     # Resume training state
     step = 0
     # cfg.output_dir = os.path.join(cfg.output_dir, cfg.job_name)
-    if cfg.resume:
+    if cfg.weight_resume:
         logger.info(f"Resuming training from {cfg.output_dir}")
         ckpt_path = cfg.output_dir
         # ckpt_list = os.listdir(ckpt_path)
