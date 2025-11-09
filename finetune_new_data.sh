@@ -54,7 +54,7 @@ python -m lerobot.scripts.dps_train_2 \
     --dataset.data_mix=$DATA_MIX \
     --dataset.use_state=$USE_STATE \
     --dataset.image_transforms.enable=false \
-    --wandb.enable=true \
+    --wandb.enable=false \
     --resume=false \
     --wandb.project="pi0-ft-simulated" \
     --job_name=$JOB_NAME \
