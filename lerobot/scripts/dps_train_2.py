@@ -282,7 +282,7 @@ def train(cfg: TrainPipelineConfig):
     # Resume training state
     step = 0
     # cfg.output_dir = os.path.join(cfg.output_dir, cfg.job_name)
-    if cfg.resume:
+    if cfg.weight_resume:
         logger.info(f"Resuming training from {cfg.output_dir}")
         ckpt_path = cfg.output_dir
         # ckpt_list = os.listdir(ckpt_path)
@@ -364,8 +364,8 @@ def train(cfg: TrainPipelineConfig):
             train_tracker.lr = optimizer.param_groups[0]["lr"]
             train_tracker.step()
             
-            fwd_bwd_time=0
-            dataloading_s=0
+            fwd_bwd_time = 0
+            dataloading_s = 0
         
         is_log_step = cfg.log_freq > 0 and step % cfg.log_freq == 0
         is_saving_step = step % cfg.save_freq == 0 or step == cfg.steps

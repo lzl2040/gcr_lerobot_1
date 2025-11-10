@@ -8,6 +8,9 @@ FREEZE_VISION=false
 PT_PATH="/mnt/wangxiaofa/latent_action_exp/1031_distill_pi05_oxe_minus/step10000.pt"
 LOSS_TYPE="mse_loss"
 IMG_AUG=true
+SAVE_FREQ=2000
+WARM_UP_STEPS=1000
+DECAY_STEPS=30000
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -48,6 +51,18 @@ while [[ $# -gt 0 ]]; do
             IMG_AUG="$2"
             shift 2
             ;;
+        --save_freq)
+            SAVE_FREQ="$2"
+            shift 2
+            ;;
+        --warm_up_steps)
+            WARM_UP_STEPS="$2"
+            shift 2
+            ;;
+        --decay_steps)
+            DECAY_STEPS="$2"
+            shift 2
+            ;;
     esac
 done
 OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
@@ -59,6 +74,8 @@ python -m lerobot.scripts.dps_train \
     --policy.use_lora=false \
     --policy.train_expert_only=$TRAIN_EXPERT_ONLY \
     --policy.freeze_vision_encoder=$FREEZE_VISION \
+    --policy.scheduler_warmup_steps=$WARM_UP_STEPS \
+    --policy.scheduler_decay_steps=$DECAY_STEPS \
     --policy.loss_type=$LOSS_TYPE \
     --dataset.root="/mnt/wangxiaofa/robot_dataset/lerobot-format" \
     --dataset.repo_id="any/simulted" \
@@ -73,6 +90,6 @@ python -m lerobot.scripts.dps_train \
     --log_dir="/mnt/wangxiaofa/logs" \
     --output_dir=$OUTPUT_DIR \
     --steps=300_000 \
-    --save_freq=4000 \
+    --save_freq=$SAVE_FREQ \
     --policy.pt_weight_path=$PT_PATH \
     --policy.pretrained_path="" 
