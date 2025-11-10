@@ -1519,6 +1519,12 @@ class MultiSameDataset(torch.utils.data.Dataset):
         if self.use_state == False:
             self.stats["observation.state"]["mean"][:] = 0
             self.stats["observation.state"]["std"][:] = 1
+        
+        self.loss_type = cfg.policy.loss_type
+        if self.loss_type == "xvla_loss":
+            print(f"Set gripper mean to 1, std to 0")
+            self.stats["action"]["mean"][-1:] = 0
+            self.stats["action"]["std"][-1:] = 1
         print(self.stats, meta_features)
         self.meta = LeRobotDatasetMetadata.create_with_stats_feats(stats=self.stats, features=meta_features) # Note: I added a class function
         self.meta.repo_id = "Any"
