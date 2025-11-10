@@ -171,7 +171,7 @@ def make_policy(
                 state_dict = policy._fix_pytorch_state_dict_keys(new_weights)
             else:
                 state_dict = new_weights
-            policy.resize_token_embedding()
+                policy.resize_token_embedding()
             missing_key, unexpected_keys = policy.load_state_dict(state_dict, strict=False)
             print(f"missing {missing_key} {unexpected_keys}")
         else:
