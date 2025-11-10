@@ -70,8 +70,8 @@ class PI05Config(PreTrainedConfig):
     train_expert_only: bool = False
     loss_type: str = "xvla_loss"
     GRIPPER_SCALE: float = 1.0
-    XYZ_SCALE: float = 2.0
-    ROT_SCALE: float = 2.0
+    XYZ_SCALE: float = 5.0
+    ROT_SCALE: float = 1.0
 
     # Training settings
     gradient_checkpointing: bool = True  # Enable gradient checkpointing for memory optimization
