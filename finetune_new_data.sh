@@ -10,6 +10,7 @@ PT_PATH="/mnt/wangxiaofa/latent_action_exp/1031_distill_pi05_oxe_minus/step10000
 SAVE_FREQ=1000
 WARM_UP_STEPS=1000
 DECAY_STEPS=30000
+ADD_NEW_TOKENS=true
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -58,6 +59,10 @@ while [[ $# -gt 0 ]]; do
             DECAY_STEPS="$2"
             shift 2
             ;;
+        --add_new_tokens)
+            ADD_NEW_TOKENS="$2"
+            shift 2
+            ;;
     esac
 done
 OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
@@ -72,6 +77,7 @@ python -m lerobot.scripts.dps_train_2 \
     --policy.scheduler_warmup_steps=$WARM_UP_STEPS \
     --policy.scheduler_decay_steps=$DECAY_STEPS \
     --policy.loss_type=$LOSS_TYPE \
+    --policy.add_new_tokens=$ADD_NEW_TOKENS \
     --dataset.root="/mnt/wangxiaofa/robot_dataset/lerobot-format" \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \
