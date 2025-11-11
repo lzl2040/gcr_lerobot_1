@@ -901,14 +901,14 @@ class LeRobotDataset(torch.utils.data.Dataset):
         if self.image_transforms is not None:
             image_keys = self.meta.camera_keys
             for cam in image_keys:
-                # item[cam] = self.image_transforms(item[cam])
-                if "primary" in cam:
-                    item[cam] = self.image_transforms(item[cam])
-                else:
-                    if self.wrist_image_transforms is not None:
-                        item[cam] = self.wrist_image_transforms(item[cam])
-                    else:
-                        item[cam] = self.image_transforms(item[cam])
+                item[cam] = self.image_transforms(item[cam])
+                # if "primary" in cam:
+                #     item[cam] = self.image_transforms(item[cam])
+                # else:
+                #     if self.wrist_image_transforms is not None:
+                #         item[cam] = self.wrist_image_transforms(item[cam])
+                #     else:
+                #         item[cam] = self.image_transforms(item[cam])
                 # our
                 # item[cam] = self.resize_with_pad(item[cam], 224, 224, pad_value=0)
         
