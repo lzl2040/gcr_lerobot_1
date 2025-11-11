@@ -18,6 +18,12 @@ class PI0Config(PreTrainedConfig):
     
     use_lora: bool = False
     lora_rank: int = 32
+    loss_type: str = "mse_loss"  # or xvla_loss
+    GRIPPER_SCALE: float = 1.0
+    XYZ_SCALE: float = 5.0
+    ROT_SCALE: float = 1.0
+    add_new_tokens: bool = False
+    use_state: bool = True
 
     normalization_mapping: dict[str, NormalizationMode] = field(
         default_factory=lambda: {

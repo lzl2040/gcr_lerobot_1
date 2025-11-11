@@ -403,7 +403,9 @@ class PI0Policy(PreTrainedPolicy):
             loss_dict["losses_after_in_ep_bound"] = losses.clone()
 
         # Remove padding
-        losses = losses[:, :, : self.config.max_action_dim]
+        if self.config.loss_type != "xvla_loss":
+            original_action_dim = self.config.output_features[ACTION].shape[0]
+            losses = losses[:, :, :original_action_dim]
         loss_dict["losses_after_rm_padding"] = losses.clone()
 
         # For backward pass
@@ -552,7 +554,7 @@ class PI0FlowMatching(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        
+        self.loss_type = config.loss_type
         self.dtype = torch.bfloat16
 
         paligemma_with_export_config = PaliGemmaWithExpertConfig(
@@ -571,6 +573,8 @@ class PI0FlowMatching(nn.Module):
         self.action_time_mlp_out = nn.Linear(self.config.proj_width, self.config.proj_width)
 
         self.set_requires_grad()
+        self.mse = nn.MSELoss()
+        self.bce = nn.BCEWithLogitsLoss()
     
     def add_lora(self):
         if self.config.use_lora:
@@ -721,6 +725,24 @@ class PI0FlowMatching(nn.Module):
 
         return embs, pad_masks, att_masks
 
+    def xvla_loss(self, gt_action, pred_action):
+        '''
+        gt_action: B 50 32
+        pred_action: B 50 32
+        '''
+        # print(gt_action.shape, pred_action.shape)
+        # print("pre", gt_action[:, :, 6])
+        gt_action[:, :, 6] = torch.round(gt_action[:, :, 6]).long()
+        # print("after", gt_action[:, :, 6])
+        gt_action = gt_action[:, :, :self.config.output_features[ACTION].shape[0]]
+        pred_action = pred_action[:, :, :self.config.output_features[ACTION].shape[0]]
+        gripper_loss = self.bce(pred_action[:, :, 6], gt_action[:, :, 6]) * self.config.GRIPPER_SCALE
+        position_loss = self.mse(pred_action[:, :, [0, 1, 2]], gt_action[:, :, [0, 1, 2]]) * self.config.XYZ_SCALE
+        rot_loss = self.mse(pred_action[:, :, [3, 4, 5]], gt_action[:, :, [3, 4, 5]]) * self.config.ROT_SCALE
+        loss = gripper_loss + position_loss + rot_loss
+        # print(f"gripper loss:{gripper_loss.item()}, position loss:{position_loss.item()} rot loss:{rot_loss.item()}")
+        return loss
+    
     def forward(
         self, images, img_masks, lang_tokens, lang_masks, state, actions, noise=None, time=None
     ) -> Tensor:
@@ -760,7 +782,14 @@ class PI0FlowMatching(nn.Module):
         # suffix_out = suffix_out.to(dtype=torch.float32)
         suffix_out = suffix_out.to(dtype=self.dtype)
         v_t = self.action_out_proj(suffix_out)
-
+        v_t = v_t.to(dtype=torch.float32)
+        u_t = u_t.to(dtype=torch.float32)
+        noise = noise.to(dtype=torch.float32)
+        if self.loss_type == "xvla_loss":
+            pred_actions = noise - v_t
+            pred_actions = pred_actions.to(dtype=torch.float32)
+            actions = actions.to(dtype=torch.float32)
+            return self.xvla_loss(actions, pred_actions)
         losses = F.mse_loss(u_t, v_t, reduction="none")
         return losses
 
