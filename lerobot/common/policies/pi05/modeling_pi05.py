@@ -214,6 +214,8 @@ class PI05Policy(PreTrainedPolicy):
         if config.add_new_tokens:
             COMPRESS_SC_TOKEN = 'CP_SC'
             COMPRESS_ACTION_TOKEN = 'CP_ACT'
+            self.COMPRESS_ACTION_TOKEN = COMPRESS_ACTION_TOKEN
+            self.COMPRESS_SC_TOKEN = COMPRESS_SC_TOKEN
             new_action_tokens = [f"[{COMPRESS_ACTION_TOKEN}]"]
             new_scene_tokens = [f"[{COMPRESS_SC_TOKEN}]"]
             self.language_tokenizer.add_tokens(new_action_tokens)
@@ -234,8 +236,6 @@ class PI05Policy(PreTrainedPolicy):
 
         self.model.to(config.device)
         self.dtype = torch.bfloat16
-        self.COMPRESS_ACTION_TOKEN = COMPRESS_ACTION_TOKEN
-        self.COMPRESS_SC_TOKEN = COMPRESS_SC_TOKEN
 
         self.reset()
     
