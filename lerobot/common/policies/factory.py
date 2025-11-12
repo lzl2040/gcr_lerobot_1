@@ -171,12 +171,14 @@ def make_policy(
                 state_dict = policy._fix_pytorch_state_dict_keys(new_weights)
             else:
                 state_dict = new_weights
-                policy.resize_token_embedding()
             missing_key, unexpected_keys = policy.load_state_dict(state_dict, strict=False)
             print(f"missing {missing_key} {unexpected_keys}")
         else:
             missing_key, unexpected_keys = policy.load_state_dict(new_weights, strict=False)
             print(f"missing {missing_key} {unexpected_keys}")
+        
+        if cfg.type == "pi05" and cfg.add_new_tokens:
+            policy.resize_token_embedding()
         print(f"Load pt weights from:{weight_pt_path}")
     
     # policy.to(device)
