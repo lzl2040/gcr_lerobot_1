@@ -166,19 +166,19 @@ def make_policy(
                 print(f"Skip loading buffer: {key}")
                 continue
             new_weights[key] = value
-        if "pi05" in weight_pt_path:
+        if cfg.type == "pi05":
             if "pi05_base" in weight_pt_path:
                 state_dict = policy._fix_pytorch_state_dict_keys(new_weights)
             else:
                 state_dict = new_weights
+            if cfg.add_new_tokens:
+                policy.resize_token_embedding()
             missing_key, unexpected_keys = policy.load_state_dict(state_dict, strict=False)
             print(f"missing {missing_key} {unexpected_keys}")
         else:
             missing_key, unexpected_keys = policy.load_state_dict(new_weights, strict=False)
             print(f"missing {missing_key} {unexpected_keys}")
         
-        if cfg.type == "pi05" and cfg.add_new_tokens:
-            policy.resize_token_embedding()
         print(f"Load pt weights from:{weight_pt_path}")
     
     # policy.to(device)
