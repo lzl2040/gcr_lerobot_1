@@ -11,6 +11,8 @@ IMG_AUG=true
 SAVE_FREQ=2000
 WARM_UP_STEPS=1000
 DECAY_STEPS=30000
+ADD_NEW_TOKENS=false
+USE_NEW_TOKENS=false
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -63,6 +65,14 @@ while [[ $# -gt 0 ]]; do
             DECAY_STEPS="$2"
             shift 2
             ;;
+        --add_new_tokens)
+            ADD_NEW_TOKENS="$2"
+            shift 2
+            ;;
+        --use_new_tokens)
+            USE_NEW_TOKENS="$2"
+            shift 2
+            ;;
     esac
 done
 OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
@@ -77,6 +87,8 @@ python -m lerobot.scripts.dps_train \
     --policy.scheduler_warmup_steps=$WARM_UP_STEPS \
     --policy.scheduler_decay_steps=$DECAY_STEPS \
     --policy.loss_type=$LOSS_TYPE \
+    --policy.add_new_tokens=$ADD_NEW_TOKENS \
+    --policy.use_new_tokens=$USE_NEW_TOKENS \
     --dataset.root="/mnt/wangxiaofa/robot_dataset/lerobot-format" \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \

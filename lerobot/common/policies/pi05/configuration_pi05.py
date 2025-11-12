@@ -73,6 +73,7 @@ class PI05Config(PreTrainedConfig):
     XYZ_SCALE: float = 5.0
     ROT_SCALE: float = 1.0
     add_new_tokens: bool = False
+    use_new_tokens: bool = False
 
     # Training settings
     gradient_checkpointing: bool = True  # Enable gradient checkpointing for memory optimization
