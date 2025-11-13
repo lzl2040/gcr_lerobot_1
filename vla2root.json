@@ -73,5 +73,8 @@
     "pizza_sub2": "pizza_sub_2_hz_15",
     "pizza_sub4_fewshot_10": "pizza_sub_4_hz_15_fs_num_10",
     "pizza_sub4_fewshot_50": "pizza_sub_4_hz_15_fs_num_50",
-    "pizza_sub4": "pizza_sub_4_hz_15"
+    "pizza_sub4": "pizza_sub_4_hz_15",
+    "pizza_sub1_fewshot_10": "pizza_sub_1_hz_15_fs_num_10",
+    "pizza_sub1_fewshot_50": "pizza_sub_1_hz_15_fs_num_50",
+    "pizza_sub1": "pizza_sub_1_hz_15"
 }
