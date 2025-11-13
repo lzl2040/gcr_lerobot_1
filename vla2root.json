@@ -67,5 +67,11 @@
     "sauce_fewshot_10": "sauce_hz_4_fs_num_10",
     "block_fewshot_50": "block_hz_4_fs_num_50",
     "block_full": "block_hz_4",
-    "block_fewshot_10": "block_hz_4_fs_num_10"
+    "block_fewshot_10": "block_hz_4_fs_num_10",
+    "pizza_sub2_fewshot_10": "pizza_sub_2_hz_15_fs_num_10",
+    "pizza_sub2_fewshot_50": "pizza_sub_2_hz_15_fs_num_50",
+    "pizza_sub2": "pizza_sub_2_hz_15",
+    "pizza_sub4_fewshot_10": "pizza_sub_4_hz_15_fs_num_10",
+    "pizza_sub4_fewshot_50": "pizza_sub_4_hz_15_fs_num_50",
+    "pizza_sub4": "pizza_sub_4_hz_15"
 }
