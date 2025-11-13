@@ -15,8 +15,6 @@ from transformers.models.auto import CONFIG_MAPPING
 
 from lerobot.common.policies.pi0.flex_attention import flex_attention_forward
 
-from peft import get_peft_model, LoraConfig, TaskType
-
 
 def apply_rope(x, positions, max_wavelength=10_000):
     """
@@ -225,6 +223,7 @@ class PaliGemmaWithExpertModel(PreTrainedModel):
         return self.paligemma.get_image_features(image)
 
     def embed_language_tokens(self, tokens: torch.Tensor):
+        # return self.paligemma.language_model.embed_tokens(tokens)
         return self.paligemma.language_model.model.embed_tokens(tokens)
 
     # TODO: break down this huge forward into modules or functions
