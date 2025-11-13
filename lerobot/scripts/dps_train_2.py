@@ -61,7 +61,6 @@ from lerobot.common.utils.wandb_utils import WandBLogger
 from lerobot.configs import parser
 from lerobot.configs.train import TrainPipelineConfig
 from lerobot.scripts.eval import eval_policy
-from peft import PeftModel
 import functools
 # 修复 PyTorch 2.6 的默认行为，让 DeepSpeed 正常加载 checkpoint
 torch.load = functools.partial(torch.load, weights_only=False)
@@ -373,32 +372,11 @@ def train(cfg: TrainPipelineConfig):
             logger.info(f"Checkpoint policy after step {step}")
             # checkpoint_dir = get_step_checkpoint_dir(cfg.output_dir, cfg.steps, step)
             os.makedirs(cfg.output_dir, exist_ok=True)
-            
-            if cfg.policy.use_lora:
-                client_state['step'] = step
-                # 获取 LoRA 模型引用
-                lora_module = model_engine.module.model.paligemma_with_expert.paligemma
-                assert isinstance(lora_module, PeftModel)
-
-                # 1. 暂时合并并卸载 LoRA adapter
-                merged_model = lora_module.merge_and_unload()
-
-                # 2. 替换模型中原来的模块（只用于保存）
-                model_engine.module.model.paligemma_with_expert.paligemma = merged_model
-
-                # 3. 执行保存（保存的是合并后的模型）
-                model_engine.save_checkpoint(
-                    save_dir=cfg.output_dir,
-                    client_state=client_state
-                )
-                # 4. 恢复原始 LoRA 模型（还原）
-                model_engine.module.model.paligemma_with_expert.paligemma = lora_module
-            else:
-                client_state['step'] = step
-                model_engine.save_checkpoint(
-                    save_dir=cfg.output_dir,
-                    client_state=client_state
-                )
+            client_state['step'] = step
+            model_engine.save_checkpoint(
+                save_dir=cfg.output_dir,
+                client_state=client_state
+            )
             logger.info(f"Checkpoint policy after step {step} completed.")
             # torch.save(client_state, os.path.join(checkpoint_dir, "metadata.pt"))
             # update_last_checkpoint(checkpoint_dir)
