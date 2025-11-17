@@ -91,7 +91,7 @@ python -m lerobot.scripts.dps_train_2 \
     --weight_resume=true \
     --wandb.enable=true \
     --resume=false \
-    --wandb.project="pi05-ft-simulated" \
+    --wandb.project="pi0-ft-simulated" \
     --job_name=$JOB_NAME \
     --log_dir="/mnt/wangxiaofa/logs" \
     --output_dir=$OUTPUT_DIR \
