@@ -11,6 +11,7 @@ SAVE_FREQ=1000
 WARM_UP_STEPS=1000
 DECAY_STEPS=30000
 ADD_NEW_TOKENS=true
+IMG_AUG=false
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -63,6 +64,10 @@ while [[ $# -gt 0 ]]; do
             ADD_NEW_TOKENS="$2"
             shift 2
             ;;
+        --img_aug)
+            IMG_AUG="$2"
+            shift 2
+            ;;
     esac
 done
 OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
@@ -82,7 +87,7 @@ python -m lerobot.scripts.dps_train_2 \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \
     --dataset.use_state=$USE_STATE \
-    --dataset.image_transforms.enable=true \
+    --dataset.image_transforms.enable=$IMG_AUG \
     --weight_resume=true \
     --wandb.enable=true \
     --resume=false \
