@@ -12,6 +12,7 @@ WARM_UP_STEPS=1000
 DECAY_STEPS=30000
 ADD_NEW_TOKENS=true
 IMG_AUG=false
+PROJECT_NAME="pi05-ft-simulated"
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -68,9 +69,13 @@ while [[ $# -gt 0 ]]; do
             IMG_AUG="$2"
             shift 2
             ;;
+        --project_name)
+            PROJECT_NAME="$2"
+            shift 2
+            ;;
     esac
 done
-OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
+OUTPUT_DIR="/mnt/wangxiaofa/${PROJECT_NAME}/${JOB_NAME}"
 # 
 # python lerobot/scripts/dps_train.py \
 python -m lerobot.scripts.dps_train_2 \
@@ -91,7 +96,7 @@ python -m lerobot.scripts.dps_train_2 \
     --weight_resume=true \
     --wandb.enable=true \
     --resume=false \
-    --wandb.project="pi0-ft-simulated" \
+    --wandb.project=$PROJECT_NAME \
     --job_name=$JOB_NAME \
     --log_dir="/mnt/wangxiaofa/logs" \
     --output_dir=$OUTPUT_DIR \
