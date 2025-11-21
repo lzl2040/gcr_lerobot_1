@@ -1488,6 +1488,9 @@ class MultiSameDataset(torch.utils.data.Dataset):
             self.action_idx.extend(left_action_idx)
             for a_id in left_action_idx:
                 self.action_idx.append(a_id + act_dim)
+        elif "aloha_table" in cfg.dataset.data_mix:
+            self.state_idx = list(range(16))
+            self.action_idx = list(range(14))
         else:
             self.state_idx = [0, 1, 2, 6, 7, 8, 9, -1]
             self.action_idx = list(range(0, 6)) + [-1]
