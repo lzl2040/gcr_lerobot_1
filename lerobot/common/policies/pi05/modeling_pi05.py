@@ -417,23 +417,61 @@ class PI05Policy(PreTrainedPolicy):
         """Select a single action given environment observations."""
         self.eval()
 
-        # Action queue logic for n_action_steps > 1
-        if len(self._action_queue) == 0:
-            actions = self.predict_action_chunk(batch)[:, : self.config.n_action_steps]
-            # Transpose to get shape (n_action_steps, batch_size, action_dim)
-            self._action_queue.extend(actions.transpose(0, 1))
+        # # Action queue logic for n_action_steps > 1
+        # if len(self._action_queue) == 0:
+        #     actions = self.predict_action_chunk(batch)[:, : self.config.n_action_steps]
+                # actions = self.unnormalize_outputs({"action": actions})["action"]
+                # actions = actions.to(dtype=torch.float32)
+        #     # Transpose to get shape (n_action_steps, batch_size, action_dim)
+        #     self._action_queue.extend(actions.transpose(0, 1))
 
-        return self._action_queue.popleft()
+        # return self._action_queue.popleft()
+        
+        actions = self.predict_action_chunk(batch)[:, : self.config.n_action_steps]
+        # print(actions.shape)
+        actions = self.unnormalize_outputs({"action": actions})["action"]
+        actions = actions.to(dtype=torch.float32)
+        return actions
 
     @torch.no_grad()
     def predict_action_chunk(self, batch: dict[str, Tensor]) -> Tensor:
         """Predict a chunk of actions given environment observations."""
         self.eval()
 
+        self.eval()
+        batch = self.normalize_inputs(batch)
+        state_np = batch[OBS_ROBOT].to(dtype=torch.float32).cpu().numpy()
+        discretized_states = np.digitize(state_np, bins=np.linspace(-1, 1, 256 + 1)[:-1]) - 1
+        full_prompts = []
+        tasks = batch["task"]
+        
+        if self.use_new_tokens == False:
+            for i, task in enumerate(tasks):
+                cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
+                state_str = " ".join(map(str, discretized_states[i]))
+                full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
+                full_prompts.append(full_prompt)
+        else:
+            for i, task in enumerate(tasks):
+                cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
+                state_str = " ".join(map(str, discretized_states[i]))
+                # full_prompt = f"Task: {cleaned_text}, State: {state_str};\nAction: "
+                full_prompt = f"Task: {cleaned_text}, State: {state_str}; "
+                summary_text = ""
+                summary_text = summary_text + "Scene representations:"
+                for j in range(64):
+                    summary_text += f"[{self.COMPRESS_SC_TOKEN}] "
+                summary_text += ". Action representations:"
+                for j in range(64):
+                    summary_text += f"[{self.COMPRESS_ACTION_TOKEN}] "
+                summary_text += ".\nAction:"
+                full_prompt = full_prompt + summary_text
+                full_prompts.append(full_prompt)
+        
+        batch["task"] = full_prompts
         # Prepare inputs
         images, img_masks = self._preprocess_images(batch)
-        tokens, masks = batch[f"{OBS_LANGUAGE_TOKENS}"], batch[f"{OBS_LANGUAGE_ATTENTION_MASK}"]
-
+        tokens, masks = self.prepare_language(batch)
         # Sample actions using the model (no separate state needed for PI05)
         actions = self.model.sample_actions(images, img_masks, tokens, masks)
 
@@ -461,6 +499,7 @@ class PI05Policy(PreTrainedPolicy):
         full_prompts = []
         tasks = batch["task"]
         if self.use_new_tokens == False:
+            # print("not use_new_tokens")
             for i, task in enumerate(tasks):
                 cleaned_text = task.strip().replace("_", " ").replace("\n", " ")
                 state_str = " ".join(map(str, discretized_states[i]))
@@ -674,8 +713,6 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
             max_period=self.config.max_period,
             device=timestep.device,
         )
-        time_emb = time_emb.type(dtype=timestep.dtype)
-
         # Fuse timestep + action information using an MLP
         def action_proj_func(noisy_actions):
             return self.action_in_proj(noisy_actions)
@@ -687,7 +724,8 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
             x = F.silu(x)
             x = self.time_mlp_out(x)
             return F.silu(x)
-
+        
+        time_emb = time_emb.to(dtype=self.dtype)
         time_emb = self._apply_checkpoint(time_mlp_func, time_emb)
         action_time_emb = action_emb
         adarms_cond = time_emb
@@ -899,5 +937,5 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
 
         suffix_out = outputs_embeds[1]
         suffix_out = suffix_out[:, -self.config.chunk_size :]
-        suffix_out = suffix_out.to(dtype=torch.float32)
+        # suffix_out = suffix_out.to(dtype=torch.float32)
         return self.action_out_proj(suffix_out)
