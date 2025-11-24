@@ -1531,6 +1531,11 @@ class MultiSameDataset(torch.utils.data.Dataset):
             print(f"Set gripper q01 to -1, q99 to 1")
             self.stats["action"]["q01"][-1:] = -1
             self.stats["action"]["q99"][-1:] = 1
+            if len(self.action_idx) > 10:
+                self.stats["action"]["q01"][6:7] = -1
+                self.stats["action"]["q99"][6:7] = 1
+                self.stats["action"]["mean"][6:7] = 0
+                self.stats["action"]["std"][6:7] = 1
         print(self.stats, meta_features)
         self.meta = LeRobotDatasetMetadata.create_with_stats_feats(stats=self.stats, features=meta_features) # Note: I added a class function
         self.meta.repo_id = "Any"
