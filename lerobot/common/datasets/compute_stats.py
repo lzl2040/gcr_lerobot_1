@@ -305,6 +305,7 @@ def aggregate_stats_2(stats_list: list[dict[str, dict]], action_idx = None, stat
             continue
         if state_idx != None or action_idx != None:
             for k, v in aggregated_stats[key].items():
+                print(aggregated_stats[key][k].shape[0])
                 if aggregated_stats[key][k].shape[0] > 10:
                     aggregated_stats[key][k] = aggregated_stats[key][k][idx]
                 

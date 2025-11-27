@@ -1478,6 +1478,7 @@ class MultiSameDataset(torch.utils.data.Dataset):
         if "american" in cfg.dataset.data_mix:
             act_dim = 17
             left_state_idx = [0, 1, 2, 6, 7, 8, 9, 16]
+            # left_state_idx = [0, 1, 2, 3, 4, 5, 16]
             self.state_idx = []
             self.state_idx.extend(left_state_idx)
             for s_id in left_state_idx:
@@ -1491,6 +1492,10 @@ class MultiSameDataset(torch.utils.data.Dataset):
         elif "aloha_table" in cfg.dataset.data_mix:
             self.state_idx = list(range(16))
             self.action_idx = list(range(14))
+        elif "pizza" in cfg.dataset.data_mix:
+            print("Nou Unified Action and State Space")
+            self.state_idx = list(range(8))
+            self.action_idx = list(range(7))
         else:
             self.state_idx = [0, 1, 2, 6, 7, 8, 9, -1]
             self.action_idx = list(range(0, 6)) + [-1]
@@ -1609,7 +1614,7 @@ class MultiSameDataset(torch.utils.data.Dataset):
             item["observation.state"][:] = 0
         
         if item["observation.state"].shape[0] > 10:
-            item["observation.state"] = item["observation.state"][self.state_idx]
+            item["observation.state"] = item["observation.state"][self.action_idx]
             item["action"] = item["action"][:, self.action_idx]
             # print(item["action"][:, 6:])
             # print(item["observation.state"].shape, item["action"].shape)
