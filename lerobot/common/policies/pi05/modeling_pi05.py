@@ -16,6 +16,7 @@ from lerobot.common.constants import (
 )
 from lerobot.common.policies.pretrained import PreTrainedPolicy
 from lerobot.common.policies.normalize import Normalize, Unnormalize
+from lerobot.common.datasets.rotation_convert import euler_to_quaternion
 
 from transformers import AutoTokenizer
 
@@ -437,8 +438,17 @@ class PI05Policy(PreTrainedPolicy):
     def predict_action_chunk(self, batch: dict[str, Tensor]) -> Tensor:
         """Predict a chunk of actions given environment observations."""
         self.eval()
-
-        self.eval()
+        
+        # convert euler to quant
+        quat_state = torch.ones((batch[OBS_ROBOT].shape[0], 16)).to(device=batch[OBS_ROBOT].device)
+        quat_state[:, 0:3] = batch[OBS_ROBOT][:, 0:3]
+        quat_state[:, 3:7] = euler_to_quaternion(batch[OBS_ROBOT][:, 3:6])
+        quat_state[:, 7:8] = batch[OBS_ROBOT][:, 6:7]
+        quat_state[:, 0+8:3+8] = batch[OBS_ROBOT][:, 0+7:3+7]
+        quat_state[:, 3+8:7+8] = euler_to_quaternion(batch[OBS_ROBOT][:, 3+7:6+7])
+        quat_state[:, 7+8:8+8] = batch[OBS_ROBOT][:, 6+7:7+7]
+        batch[OBS_ROBOT] = quat_state
+        
         batch = self.normalize_inputs(batch)
         state_np = batch[OBS_ROBOT].to(dtype=torch.float32).cpu().numpy()
         discretized_states = np.digitize(state_np, bins=np.linspace(-1, 1, 256 + 1)[:-1]) - 1
@@ -756,35 +766,35 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         # print("after", gt_action[:, :, 6])
         full_action_dim = self.config.output_features[ACTION].shape[0]
         # print(full_action_dim)
-        if full_action_dim < 10:
-            gt_action = gt_action[:, :, :self.config.output_features[ACTION].shape[0]]
-            pred_action = pred_action[:, :, :self.config.output_features[ACTION].shape[0]]
-            gripper_loss = self.bce(pred_action[:, :, 6], gt_action[:, :, 6]) * self.config.GRIPPER_SCALE
-            position_loss = self.mse(pred_action[:, :, [0, 1, 2]], gt_action[:, :, [0, 1, 2]]) * self.config.XYZ_SCALE
-            rot_loss = self.mse(pred_action[:, :, [3, 4, 5]], gt_action[:, :, [3, 4, 5]]) * self.config.ROT_SCALE
-            loss = gripper_loss + position_loss + rot_loss
-        else:
-            org_action_dim = full_action_dim // 2
-            left_gripper_loss = self.bce(pred_action[:, :, org_action_dim], gt_action[:, :, org_action_dim]) * self.config.GRIPPER_SCALE
-            right_gripper_loss = self.bce(pred_action[:, :, org_action_dim * 2], gt_action[:, :, org_action_dim * 2]) * self.config.GRIPPER_SCALE
-            gripper_loss = left_gripper_loss + right_gripper_loss
+        # if full_action_dim < 10:
+        gt_action = gt_action[:, :, :self.config.output_features[ACTION].shape[0]]
+        pred_action = pred_action[:, :, :self.config.output_features[ACTION].shape[0]]
+        gripper_loss = self.bce(pred_action[:, :, 6], gt_action[:, :, 6]) * self.config.GRIPPER_SCALE
+        position_loss = self.mse(pred_action[:, :, [0, 1, 2]], gt_action[:, :, [0, 1, 2]]) * self.config.XYZ_SCALE
+        rot_loss = self.mse(pred_action[:, :, [3, 4, 5]], gt_action[:, :, [3, 4, 5]]) * self.config.ROT_SCALE
+        loss = gripper_loss + position_loss + rot_loss
+        # else:
+        #     org_action_dim = full_action_dim // 2
+        #     left_gripper_loss = self.bce(pred_action[:, :, org_action_dim], gt_action[:, :, org_action_dim]) * self.config.GRIPPER_SCALE
+        #     right_gripper_loss = self.bce(pred_action[:, :, org_action_dim * 2], gt_action[:, :, org_action_dim * 2]) * self.config.GRIPPER_SCALE
+        #     gripper_loss = left_gripper_loss + right_gripper_loss
             
-            left_pos_id = [0, 1, 2]
-            right_pos_id = []
-            for id in left_pos_id:
-                right_pos_id.append(id + org_action_dim)
-            left_position_loss = self.mse(pred_action[:, :, left_pos_id], gt_action[:, :, left_pos_id]) * self.config.XYZ_SCALE
-            right_position_loss = self.mse(pred_action[:, :, right_pos_id], gt_action[:, :, right_pos_id]) * self.config.XYZ_SCALE
-            position_loss = left_position_loss + right_position_loss
+        #     left_pos_id = [0, 1, 2]
+        #     right_pos_id = []
+        #     for id in left_pos_id:
+        #         right_pos_id.append(id + org_action_dim)
+        #     left_position_loss = self.mse(pred_action[:, :, left_pos_id], gt_action[:, :, left_pos_id]) * self.config.XYZ_SCALE
+        #     right_position_loss = self.mse(pred_action[:, :, right_pos_id], gt_action[:, :, right_pos_id]) * self.config.XYZ_SCALE
+        #     position_loss = left_position_loss + right_position_loss
             
-            left_rot_id = [4, 5, 6]
-            right_rot_id = []
-            for id in left_rot_id:
-                right_rot_id.append(id + org_action_dim)
-            left_rot_loss = self.mse(pred_action[:, :, left_rot_id], gt_action[:, :, left_rot_id]) * self.config.ROT_SCALE
-            right_rot_loss = self.mse(pred_action[:, :, right_rot_id], gt_action[:, :, right_rot_id]) * self.config.ROT_SCALE
-            rot_loss = left_rot_loss + right_rot_loss
-            loss = (gripper_loss + position_loss + rot_loss) / 2
+        #     left_rot_id = [4, 5, 6]
+        #     right_rot_id = []
+        #     for id in left_rot_id:
+        #         right_rot_id.append(id + org_action_dim)
+        #     left_rot_loss = self.mse(pred_action[:, :, left_rot_id], gt_action[:, :, left_rot_id]) * self.config.ROT_SCALE
+        #     right_rot_loss = self.mse(pred_action[:, :, right_rot_id], gt_action[:, :, right_rot_id]) * self.config.ROT_SCALE
+        #     rot_loss = left_rot_loss + right_rot_loss
+        #     loss = (gripper_loss + position_loss + rot_loss) / 2
         # print(f"gripper loss:{gripper_loss.item()}, position loss:{position_loss.item()} rot loss:{rot_loss.item()}")
         return loss
         
