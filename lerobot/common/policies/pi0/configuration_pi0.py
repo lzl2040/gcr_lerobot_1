@@ -23,6 +23,7 @@ class PI0Config(PreTrainedConfig):
     XYZ_SCALE: float = 5.0
     ROT_SCALE: float = 1.0
     add_new_tokens: bool = False
+    use_new_tokens: bool = False
     use_state: bool = True
 
     normalization_mapping: dict[str, NormalizationMode] = field(
