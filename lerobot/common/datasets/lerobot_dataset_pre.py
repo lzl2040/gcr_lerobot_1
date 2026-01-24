@@ -1451,12 +1451,12 @@ class MultiSameDataset(torch.utils.data.Dataset):
             if meta_features == None:
                 meta_features = ds_meta.features
             delta_timestamps = resolve_delta_timestamps(cfg.policy, ds_meta)
-            if "american" in d_name:
-                # episode_list = list(range(1501)) # 100个视频
-                episode_list = list(range(1501, 1601)) # 100个视频
-                # episode_list = list(range(1701))
-            else:
-                episode_list = None
+            # if "american" in d_name:
+            #     # episode_list = list(range(1501)) # 100个视频
+            #     episode_list = list(range(1501, 1601)) # 100个视频
+            #     # episode_list = list(range(1701))
+            # else:
+            episode_list = None
             dataset = LeRobotDataset(
                 repo_id, 
                 root=data_root,

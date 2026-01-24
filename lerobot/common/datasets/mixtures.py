@@ -402,6 +402,9 @@ OXE_NAMED_MIXTURES: Dict[str, List[Tuple[str, float]]] = {
      "pizza_sub4":[
          ("pizza_sub4", 1.0),
      ],
+     "pizza_long_sub4_hz_4":[
+         ("pizza_long_sub4_hz_4", 1.0),
+     ],
      "pizza_sub1_fs_10":[
          ("pizza_sub1_fewshot_10", 1.0),
      ],
