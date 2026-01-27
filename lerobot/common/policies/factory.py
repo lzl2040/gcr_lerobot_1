@@ -162,9 +162,9 @@ def make_policy(
         # print(weights.keys())
         new_weights = {}
         for key, value in weights.items():
-            # if "buffer" in key:
-            #     print(f"Skip loading buffer: {key}")
-            #     continue
+            if "buffer" in key:
+                print(f"Skip loading buffer: {key}")
+                continue
             new_weights[key] = value
         if cfg.type == "pi05":
             if "pi05_base" in weight_pt_path:
