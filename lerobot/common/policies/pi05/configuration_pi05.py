@@ -68,11 +68,11 @@ class PI05Config(PreTrainedConfig):
     
     freeze_vision_encoder: bool = False
     train_expert_only: bool = False
-    loss_type: str = "xvla_loss"
+    loss_type: str = "mse_loss"
     GRIPPER_SCALE: float = 1.0
-    XYZ_SCALE: float = 5.0
+    XYZ_SCALE: float = 1.0
     ROT_SCALE: float = 1.0
-    add_new_tokens: bool = False
+    add_new_tokens: bool = True
     use_new_tokens: bool = False
 
     # Training settings
