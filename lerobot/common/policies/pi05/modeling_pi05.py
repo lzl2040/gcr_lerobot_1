@@ -210,7 +210,8 @@ class PI05Policy(PreTrainedPolicy):
         self.model = PI05FlowMatching(config)
 
         # tokenizer_path = "/Data/lzl/huggingface/models--google--paligemma-3b-pt-224/snapshots/35e4f46485b4d07967e7e9935bc3786aad50687c/"
-        tokenizer_path = "/mnt/wangxiaofa/RDT_module_params/paligemma-3b-pt-224/"
+        # tokenizer_path = "/mnt/wangxiaofa/RDT_module_params/paligemma-3b-pt-224/"
+        tokenizer_path = "google/paligemma-3b-pt-224"
         self.language_tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
         if config.add_new_tokens:
             COMPRESS_SC_TOKEN = 'CP_SC'
@@ -725,18 +726,20 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         )
         # Fuse timestep + action information using an MLP
         def action_proj_func(noisy_actions):
-            return self.action_in_proj(noisy_actions)
+            target_dtype = self.action_in_proj.weight.dtype
+            return self.action_in_proj(noisy_actions.to(dtype=target_dtype))
 
         action_emb = self._apply_checkpoint(action_proj_func, noisy_actions)
 
         def time_mlp_func(time_emb):
-            x = self.time_mlp_in(time_emb)
+            target_dtype = self.time_mlp_in.weight.dtype
+            x = self.time_mlp_in(time_emb.to(dtype=target_dtype))
             x = F.silu(x)
             x = self.time_mlp_out(x)
             return F.silu(x)
-        
-        time_emb = time_emb.to(dtype=self.dtype)
+
         time_emb = self._apply_checkpoint(time_mlp_func, time_emb)
+        time_emb = time_emb.to(dtype=self.dtype)
         action_time_emb = action_emb
         adarms_cond = time_emb
 
