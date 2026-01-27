@@ -1614,7 +1614,7 @@ class MultiSameDataset(torch.utils.data.Dataset):
             item["observation.state"][:] = 0
         
         if item["observation.state"].shape[0] > 10:
-            item["observation.state"] = item["observation.state"][self.action_idx]
+            item["observation.state"] = item["observation.state"][self.state_idx]
             item["action"] = item["action"][:, self.action_idx]
             # print(item["action"][:, 6:])
             # print(item["observation.state"].shape, item["action"].shape)
