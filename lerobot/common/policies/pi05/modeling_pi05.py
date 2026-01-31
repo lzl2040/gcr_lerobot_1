@@ -815,9 +815,18 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
             noise = self.sample_noise(actions.shape, actions.device)
 
         if time is None:
-            # time = self.sample_time(actions.shape[0], actions.device)
+            # time = self.sample_time(actions.shape[0], actions.device) # 0-1
             time = self.time_sampler.sample_t(actions.shape[0])
             time = time.to(device=actions.device, dtype=self.dtype)
+            sigma_min = self.time_sampler.sigma_min   # 0.01
+            sigma_max = self.time_sampler.sigma_max   # 200
+
+            time = time.clamp(sigma_min, sigma_max)
+
+            time = (torch.log(time) - math.log(sigma_min)) / (
+                math.log(sigma_max) - math.log(sigma_min)
+            )
+            # print(time)
 
         time_expanded = time[:, None, None]
         x_t = time_expanded * noise + (1 - time_expanded) * actions
