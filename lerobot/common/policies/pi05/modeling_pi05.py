@@ -17,6 +17,7 @@ from lerobot.common.constants import (
 from lerobot.common.policies.pretrained import PreTrainedPolicy
 from lerobot.common.policies.normalize import Normalize, Unnormalize
 from lerobot.common.datasets.rotation_convert import euler_to_quaternion
+from lerobot.common.policies.pi05.hybrid_edm_sde import HybridEDMSDE
 
 from transformers import AutoTokenizer
 
@@ -209,7 +210,7 @@ class PI05Policy(PreTrainedPolicy):
         # Initialize the core PI05 model
         self.model = PI05FlowMatching(config)
 
-        # tokenizer_path = "/Data/lzl/huggingface/models--google--paligemma-3b-pt-224/snapshots/35e4f46485b4d07967e7e9935bc3786aad50687c/"
+        # tokenizer_path = "/Data/lzl/huggingface/paligemma-3b-pt-224"
         tokenizer_path = "/mnt/wangxiaofa/RDT_module_params/paligemma-3b-pt-224/"
         self.language_tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
         if config.add_new_tokens:
@@ -439,15 +440,15 @@ class PI05Policy(PreTrainedPolicy):
         """Predict a chunk of actions given environment observations."""
         self.eval()
         
-        # convert euler to quant
-        quat_state = torch.ones((batch[OBS_ROBOT].shape[0], 16)).to(device=batch[OBS_ROBOT].device)
-        quat_state[:, 0:3] = batch[OBS_ROBOT][:, 0:3]
-        quat_state[:, 3:7] = euler_to_quaternion(batch[OBS_ROBOT][:, 3:6])
-        quat_state[:, 7:8] = batch[OBS_ROBOT][:, 6:7]
-        quat_state[:, 0+8:3+8] = batch[OBS_ROBOT][:, 0+7:3+7]
-        quat_state[:, 3+8:7+8] = euler_to_quaternion(batch[OBS_ROBOT][:, 3+7:6+7])
-        quat_state[:, 7+8:8+8] = batch[OBS_ROBOT][:, 6+7:7+7]
-        batch[OBS_ROBOT] = quat_state
+        # convert euler to quant, for aglex
+        # quat_state = torch.ones((batch[OBS_ROBOT].shape[0], 16)).to(device=batch[OBS_ROBOT].device)
+        # quat_state[:, 0:3] = batch[OBS_ROBOT][:, 0:3]
+        # quat_state[:, 3:7] = euler_to_quaternion(batch[OBS_ROBOT][:, 3:6])
+        # quat_state[:, 7:8] = batch[OBS_ROBOT][:, 6:7]
+        # quat_state[:, 0+8:3+8] = batch[OBS_ROBOT][:, 0+7:3+7]
+        # quat_state[:, 3+8:7+8] = euler_to_quaternion(batch[OBS_ROBOT][:, 3+7:6+7])
+        # quat_state[:, 7+8:8+8] = batch[OBS_ROBOT][:, 6+7:7+7]
+        # batch[OBS_ROBOT] = quat_state
         
         batch = self.normalize_inputs(batch)
         state_np = batch[OBS_ROBOT].to(dtype=torch.float32).cpu().numpy()
@@ -597,6 +598,14 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         self.set_requires_grad()
         self.mse = nn.MSELoss()
         self.bce = nn.BCEWithLogitsLoss()
+        # https://github.com/NVlabs/cosmos-policy/blob/main/cosmos_policy/config/experiment/cosmos_policy_experiment_configs.py#L130C21-L136C40
+        self.time_sampler = HybridEDMSDE(hybrid_sigma_distribution=True,
+                    p_mean=1.3862943611198906,  # Copied from base model config
+                    p_std=1.2,
+                    sigma_max=200,
+                    sigma_min=0.01,
+                    uniform_lower=1.0,
+                    uniform_upper=85.0)
         # msg = """An incorrect transformer version is used, please create an issue on https://github.com/huggingface/lerobot/issues"""
 
         # try:
@@ -762,6 +771,7 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         '''
         # print(gt_action.shape, pred_action.shape)
         # print("pre", gt_action[:, :, 6])
+        # there action has beed selected from 17 dim
         gt_action[:, :, 6] = torch.round(gt_action[:, :, 6]).long()
         # print("after", gt_action[:, :, 6])
         full_action_dim = self.config.output_features[ACTION].shape[0]
@@ -805,7 +815,9 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
             noise = self.sample_noise(actions.shape, actions.device)
 
         if time is None:
-            time = self.sample_time(actions.shape[0], actions.device)
+            # time = self.sample_time(actions.shape[0], actions.device)
+            time = self.time_sampler.sample_t(actions.shape[0])
+            time = time.to(device=actions.device, dtype=self.dtype)
 
         time_expanded = time[:, None, None]
         x_t = time_expanded * noise + (1 - time_expanded) * actions
