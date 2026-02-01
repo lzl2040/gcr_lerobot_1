@@ -13,7 +13,7 @@ DECAY_STEPS=30000
 ADD_NEW_TOKENS=true
 USE_NEW_TOKENS=false
 IMG_AUG=false
-STATE_TYPE="quat"
+ACTION_TYPE="quat"
 PROJECT_NAME="pi05-ft-simulated"
 
 # 解析命令行参数
@@ -75,8 +75,8 @@ while [[ $# -gt 0 ]]; do
             IMG_AUG="$2"
             shift 2
             ;;
-        --state_type)
-            STATE_TYPE="$2"
+        --action_type)
+            ACTION_TYPE="$2"
             shift 2
             ;;
         --project_name)
@@ -99,7 +99,7 @@ python -m lerobot.scripts.dps_train_2 \
     --policy.loss_type=$LOSS_TYPE \
     --policy.add_new_tokens=$ADD_NEW_TOKENS \
     --policy.use_new_tokens=$USE_NEW_TOKENS \
-    --policy.state_type=$STATE_TYPE \
+    --policy.action_type=$ACTION_TYPE \
     --dataset.root="/mnt/wangxiaofa/robot_dataset/lerobot-format" \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \

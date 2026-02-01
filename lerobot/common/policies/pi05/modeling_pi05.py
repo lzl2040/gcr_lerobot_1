@@ -596,6 +596,7 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
             torch.set_float32_matmul_precision("high")
             self.sample_actions = torch.compile(self.sample_actions, mode=config.compile_mode)
         self.set_requires_grad()
+        self.action_type = config.action_type
         self.mse = nn.MSELoss()
         self.bce = nn.BCEWithLogitsLoss()
         # https://github.com/NVlabs/cosmos-policy/blob/main/cosmos_policy/config/experiment/cosmos_policy_experiment_configs.py#L130C21-L136C40
@@ -772,16 +773,21 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         # print(gt_action.shape, pred_action.shape)
         # print("pre", gt_action[:, :, 6])
         # there action has beed selected from 17 dim
-        gt_action[:, :, 6] = torch.round(gt_action[:, :, 6]).long()
+        gt_action[:, :, -1] = torch.round(gt_action[:, :, -1]).long()
         # print("after", gt_action[:, :, 6])
         full_action_dim = self.config.output_features[ACTION].shape[0]
         # print(full_action_dim)
         # if full_action_dim < 10:
         gt_action = gt_action[:, :, :self.config.output_features[ACTION].shape[0]]
         pred_action = pred_action[:, :, :self.config.output_features[ACTION].shape[0]]
-        gripper_loss = self.bce(pred_action[:, :, 6], gt_action[:, :, 6]) * self.config.GRIPPER_SCALE
+        gripper_loss = self.bce(pred_action[:, :, -1], gt_action[:, :, -1]) * self.config.GRIPPER_SCALE
         position_loss = self.mse(pred_action[:, :, [0, 1, 2]], gt_action[:, :, [0, 1, 2]]) * self.config.XYZ_SCALE
-        rot_loss = self.mse(pred_action[:, :, [3, 4, 5]], gt_action[:, :, [3, 4, 5]]) * self.config.ROT_SCALE
+        if self.action_type == "rpy":
+            rot_loss = self.mse(pred_action[:, :, [3, 4, 5]], gt_action[:, :, [3, 4, 5]]) * self.config.ROT_SCALE
+        elif self.action_type == "ort6d":
+            rot_loss = self.mse(pred_action[:, :, [3, 4, 5, 6, 7, 8]], gt_action[:, :, [3, 4, 5, 6, 7, 8]]) * self.config.ROT_SCALE
+        else:
+            rot_loss = 0.0
         loss = gripper_loss + position_loss + rot_loss
         # else:
         #     org_action_dim = full_action_dim // 2
