@@ -13,6 +13,7 @@ WARM_UP_STEPS=1000
 DECAY_STEPS=30000
 ADD_NEW_TOKENS=false
 USE_NEW_TOKENS=false
+ACTION_TYPE="rpy"
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -73,6 +74,10 @@ while [[ $# -gt 0 ]]; do
             USE_NEW_TOKENS="$2"
             shift 2
             ;;
+        --action_type)
+            ACTION_TYPE="$2"
+            shift 2
+            ;;
     esac
 done
 OUTPUT_DIR="/mnt/wangxiaofa/pi05-ft-simulated/${JOB_NAME}"
@@ -89,6 +94,7 @@ python -m lerobot.scripts.dps_train \
     --policy.loss_type=$LOSS_TYPE \
     --policy.add_new_tokens=$ADD_NEW_TOKENS \
     --policy.use_new_tokens=$USE_NEW_TOKENS \
+    --policy.action_type=$ACTION_TYPE \
     --dataset.root="/mnt/wangxiaofa/robot_dataset/lerobot-format" \
     --dataset.repo_id="any/simulted" \
     --dataset.data_mix=$DATA_MIX \
