@@ -1544,6 +1544,7 @@ class MultiSameDataset(torch.utils.data.Dataset):
             self.stats["action"]["q01"][-1:] = -1
             self.stats["action"]["q99"][-1:] = 1
             if len(self.action_idx) > 10:
+                print("action is greater than 10")
                 self.stats["action"]["q01"][6:7] = -1
                 self.stats["action"]["q99"][6:7] = 1
                 self.stats["action"]["mean"][6:7] = 0
