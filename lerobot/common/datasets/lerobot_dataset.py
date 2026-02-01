@@ -1474,6 +1474,7 @@ class MultiSameDataset(torch.utils.data.Dataset):
 
         self.dataset = ConcatDataset(self.datasets)
         self.num_episodes = episode_count
+        self.state_type = cfg.policy.state_type
         # self.stats = aggregate_same_stats(self.datasets, dataset_names)
         if "american" in cfg.dataset.data_mix:
             act_dim = 17
@@ -1494,8 +1495,14 @@ class MultiSameDataset(torch.utils.data.Dataset):
             self.action_idx = list(range(14))
         elif "pizza" in cfg.dataset.data_mix:
             print("Nou Unified Action and State Space")
-            self.state_idx = list(range(8))
-            self.action_idx = list(range(7))
+            if self.state_type == "quat":
+                self.state_idx = [0, 1, 2, 6, 7, 8, 9, -1]
+            elif self.state_type == "rpy":
+                self.state_idx = [0, 1, 2, 3, 4, 5, -1]
+            elif self.state_type == "ort6d":
+                self.state_idx = [0, 1, 2, 10, 11, 12, 13, 14, 15, -1]
+            # self.action_idx = list(range(7))
+            self.action_idx = [0, 1, 2, 3, 4, 5, -1]
         else:
             self.state_idx = [0, 1, 2, 6, 7, 8, 9, -1]
             self.action_idx = list(range(0, 6)) + [-1]
