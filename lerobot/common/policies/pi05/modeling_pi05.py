@@ -784,7 +784,7 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         position_loss = self.mse(pred_action[:, :, [0, 1, 2]], gt_action[:, :, [0, 1, 2]]) * self.config.XYZ_SCALE
         if self.action_type == "rpy":
             rot_loss = self.mse(pred_action[:, :, [3, 4, 5]], gt_action[:, :, [3, 4, 5]]) * self.config.ROT_SCALE
-        elif self.action_type == "ort6d":
+        elif "ort6d" in self.action_type:
             rot_loss = self.mse(pred_action[:, :, [3, 4, 5, 6, 7, 8]], gt_action[:, :, [3, 4, 5, 6, 7, 8]]) * self.config.ROT_SCALE
         else:
             rot_loss = 0.0
@@ -821,17 +821,19 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
             noise = self.sample_noise(actions.shape, actions.device)
 
         if time is None:
-            # time = self.sample_time(actions.shape[0], actions.device) # 0-1
-            time = self.time_sampler.sample_t(actions.shape[0])
-            time = time.to(device=actions.device, dtype=self.dtype)
-            sigma_min = self.time_sampler.sigma_min   # 0.01
-            sigma_max = self.time_sampler.sigma_max   # 200
+            if "pi0_time" in self.action_type:
+                time = self.sample_time(actions.shape[0], actions.device) # 0-1
+            else:
+                time = self.time_sampler.sample_t(actions.shape[0])
+                time = time.to(device=actions.device, dtype=self.dtype)
+                sigma_min = self.time_sampler.sigma_min   # 0.01
+                sigma_max = self.time_sampler.sigma_max   # 200
 
-            time = time.clamp(sigma_min, sigma_max)
+                time = time.clamp(sigma_min, sigma_max)
 
-            time = (torch.log(time) - math.log(sigma_min)) / (
-                math.log(sigma_max) - math.log(sigma_min)
-            )
+                time = (torch.log(time) - math.log(sigma_min)) / (
+                    math.log(sigma_max) - math.log(sigma_min)
+                )
             # print(time)
 
         time_expanded = time[:, None, None]
