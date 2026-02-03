@@ -782,7 +782,7 @@ class PI05FlowMatching(nn.Module):  # see openpi `PI0Pytorch`
         pred_action = pred_action[:, :, :self.config.output_features[ACTION].shape[0]]
         gripper_loss = self.bce(pred_action[:, :, -1], gt_action[:, :, -1]) * self.config.GRIPPER_SCALE
         position_loss = self.mse(pred_action[:, :, [0, 1, 2]], gt_action[:, :, [0, 1, 2]]) * self.config.XYZ_SCALE
-        if self.action_type == "rpy":
+        if "rpy" in self.action_type:
             rot_loss = self.mse(pred_action[:, :, [3, 4, 5]], gt_action[:, :, [3, 4, 5]]) * self.config.ROT_SCALE
         elif "ort6d" in self.action_type:
             rot_loss = self.mse(pred_action[:, :, [3, 4, 5, 6, 7, 8]], gt_action[:, :, [3, 4, 5, 6, 7, 8]]) * self.config.ROT_SCALE

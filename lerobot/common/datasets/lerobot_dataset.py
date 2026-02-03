@@ -1496,11 +1496,11 @@ class MultiSameDataset(torch.utils.data.Dataset):
         elif "pizza" in cfg.dataset.data_mix:
             print("Nou Unified Action and State Space")
             self.state_idx = [0, 1, 2, 6, 7, 8, 9, -1]
-            if self.action_type == "quat":
+            if "quat" in self.action_type:
                 self.action_idx = [0, 1, 2, 6, 7, 8, 9, -1]
-            elif self.action_type == "rpy":
+            elif "rpy" in self.action_type:
                 self.action_idx = [0, 1, 2, 3, 4, 5, -1]
-            elif self.action_type == "ort6d":
+            elif "ort6d" in self.action_type:
                 self.action_idx = [0, 1, 2, 10, 11, 12, 13, 14, 15, -1]
             # self.action_idx = list(range(7))
         else:
