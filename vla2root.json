@@ -42,6 +42,7 @@
     "pizza_v9_task_16_sep2": "pizza_v9_task_16_sep2",
     "pizza_v9_task_3_sep1": "pizza_v9_task_3_sep1",
     "pizza_long_sub1_hz_2.5" : "pizza_sub_1_hz_2.5",
+    "pizza_long_sub2_hz_4" : "pizza_sub_2_hz_4",
     "pizza_long_sub3_hz_2.5" : "pizza_sub_3_hz_2.5",
     "pizza_long_sub4_hz_2.5" : "pizza_sub_4_hz_2.5",
     "pizza_long_sub1_hz_15" : "pizza_sub_1_hz_15",
@@ -80,5 +81,14 @@
     "pizza_sub1": "pizza_sub_1_hz_15",
     "american_data_filter": "aloha-busybox_lerobot_v2_1_extended_combined_filter",
     "american_data": "aloha-busybox_lerobot_v2_1_extended_combined_new",
-    "aloha_table": "aloha_tabletop"
+    "aloha_table": "aloha_tabletop",
+    "long_task1": "pizza_v9_task_5_0806_v2",
+    "long_task2": "pizza_v9_task_5_sep2",
+    "long_task3": "pizza_v9_task_9_sep1",
+    "long_task4": "pizza_v9_task_9_sep2_r2",
+    "long_task5": "pizza_v9_task_20_v0",
+    "long_task6": "pizza_v9_task_3_sep1",
+    "long_task7": "pizza_v9_task_19_sep1",
+    "long_task8": "pizza_v9_task_16_sep1",
+    "long_task9": "pizza_v9_task_16_sep2"
 }

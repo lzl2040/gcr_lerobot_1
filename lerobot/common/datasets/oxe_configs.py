@@ -773,6 +773,20 @@ OXE_DATASET_CONFIGS = {
         "state_encoding": StateEncoding.POS_EULER,
         "action_encoding": ActionEncoding.EEF_POS,
     },
+    "pizza_long_sub1_hz_2.5": {
+            "image_obs_keys": {"primary": "right_rgb", "secondary": "top_rgb", "wrist": "wrist_rgb"},
+            "depth_obs_keys": {"primary": None, "secondary": None, "wrist": None},
+            "state_obs_keys": ["EEF_state", None, "gripper_state"],
+            "state_encoding": StateEncoding.POS_EULER,
+            "action_encoding": ActionEncoding.EEF_POS,
+    },
+    "pizza_long_sub2_hz_4": {
+            "image_obs_keys": {"primary": "right_rgb", "secondary": "top_rgb", "wrist": "wrist_rgb"},
+            "depth_obs_keys": {"primary": None, "secondary": None, "wrist": None},
+            "state_obs_keys": ["EEF_state", None, "gripper_state"],
+            "state_encoding": StateEncoding.POS_EULER,
+            "action_encoding": ActionEncoding.EEF_POS,
+    },
     "pizza_long_sub2_hz_15": {
         "image_obs_keys": {"primary": "right_rgb", "secondary": "top_rgb", "wrist": "wrist_rgb"},
         "depth_obs_keys": {"primary": None, "secondary": None, "wrist": None},
