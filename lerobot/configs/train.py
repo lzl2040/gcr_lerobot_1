@@ -52,7 +52,7 @@ class TrainPipelineConfig(HubMixin):
     batch_size: int = 16
     steps: int = 2000_000
     eval_freq: int = 2000
-    log_freq: int = 400 # * gradient steps
+    log_freq: int = 50 # * gradient steps
     save_checkpoint: bool = True
     # Checkpoint is saved every `save_freq` training iterations and after the last training step.
     save_freq: int = 1000
