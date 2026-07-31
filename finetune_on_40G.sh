@@ -14,6 +14,7 @@ DECAY_STEPS=30000
 ADD_NEW_TOKENS=false
 USE_NEW_TOKENS=false
 ACTION_TYPE="rpy"
+LATENT_TOKEN_NUM=64
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -48,6 +49,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --loss_type)
             LOSS_TYPE="$2"
+            shift 2
+            ;;
+        --latent_token_num)
+            LATENT_TOKEN_NUM="$2"
             shift 2
             ;;
         --img_aug)
@@ -94,6 +99,7 @@ python -m lerobot.scripts.dps_train \
     --policy.loss_type=$LOSS_TYPE \
     --policy.add_new_tokens=$ADD_NEW_TOKENS \
     --policy.use_new_tokens=$USE_NEW_TOKENS \
+    --policy.latent_token_num=$LATENT_TOKEN_NUM \
     --policy.action_type=$ACTION_TYPE \
     --dataset.root="/mnt/wangxiaofa/robot_dataset/lerobot-format" \
     --dataset.repo_id="any/simulted" \
