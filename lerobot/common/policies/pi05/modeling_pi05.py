@@ -209,6 +209,7 @@ class PI05Policy(PreTrainedPolicy):
 
         # Initialize the core PI05 model
         self.model = PI05FlowMatching(config)
+        self.latent_token_num = config.latent_token_num
 
         # tokenizer_path = "/Data/lzl/huggingface/paligemma-3b-pt-224"
         tokenizer_path = "/mnt/wangxiaofa/RDT_module_params/paligemma-3b-pt-224/"
@@ -470,10 +471,10 @@ class PI05Policy(PreTrainedPolicy):
                 full_prompt = f"Task: {cleaned_text}, State: {state_str}; "
                 summary_text = ""
                 summary_text = summary_text + "Scene representations:"
-                for j in range(64):
+                for j in range(self.latent_token_num):
                     summary_text += f"[{self.COMPRESS_SC_TOKEN}] "
                 summary_text += ". Action representations:"
-                for j in range(64):
+                for j in range(self.latent_token_num):
                     summary_text += f"[{self.COMPRESS_ACTION_TOKEN}] "
                 summary_text += ".\nAction:"
                 full_prompt = full_prompt + summary_text
@@ -524,10 +525,10 @@ class PI05Policy(PreTrainedPolicy):
                 full_prompt = f"Task: {cleaned_text}, State: {state_str}; "
                 summary_text = ""
                 summary_text = summary_text + "Scene representations:"
-                for j in range(64):
+                for j in range(self.latent_token_num):
                     summary_text += f"[{self.COMPRESS_SC_TOKEN}] "
                 summary_text += ". Action representations:"
-                for j in range(64):
+                for j in range(self.latent_token_num):
                     summary_text += f"[{self.COMPRESS_ACTION_TOKEN}] "
                 summary_text += ".\nAction:"
                 full_prompt = full_prompt + summary_text
